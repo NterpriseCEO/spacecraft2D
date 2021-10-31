@@ -1,0 +1,6 @@
+Furnace
+    \___ Create new furnace
+	    \___ Set furnace box index to number of furnaces+i
+    \___ Delete furnace (on removal from world)
+    	    \___ Remove furnace from the list of elements
+	    \___ Update the index of all furnaces

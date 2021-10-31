@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel = "stylesheet" href="css/index.css">
+        <script src = "js/perlin.js"></script>
+        <!--<script src = "https://cdnjs.cloudflare.com/ajax/libs/p2.js/0.7.1/p2.min.js"></script>-->
+        <script type = "module" src = "js/index.js"></script>
+        <title></title>
+    </head>
+    <body oncontextmenu = "return false;">
+        <template id = "invBox">
+            <div class = "inventoryItem">
+                <div class = "inventoryBlock hide" data-amount = "0" draggable = "true">
+                    <span>0</span>
+                    <div class = "itemHealthWrapper hide">
+                        <div class = "itemHealth"></div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id = "furnace">
+            <div class = "furnace">
+                <meter value = "0" min="0" max="100"></meter>
+            </div>
+        </template>
+
+        <img id = "tileset" src = "res/tileset_terrain.png" alt="">
+        <img id = "plants" src = "res/plants.png" alt="">
+        <canvas id = "canvas" width = "600" height = "625"></canvas>
+        <canvas id = "chunk" width = "300" height="300"></canvas>
+        <canvas id = "lighting" width = "600" height = "625"></canvas>
+        <canvas id = "character"></canvas>
+        <canvas id = "lightsCanvas" width = "300" height="300"></canvas>
+        <div id = "coords">X:0<br>Y:0</div>
+        <div id = "biomes">Forest<br></div>
+        <div id = "inventorySmall"></div>
+        <div id = "healthBar"><div id = "healthIndicator"></div></div>
+
+        <div id = "inventory" class = "hide">
+            <div id = "crafting">
+            </div>
+            <div id = "fullInventory">
+            </div>
+        </div>
+        <div id = "cursor"></div>
+        <img id = "sunMoon" src = "res/sunMoon.png" alt = "">
+        <img id = "light" src = "res/lighting.png" alt="">
+        <script src = "http://localhost:35729/livereload.js"></script>
+    </body>
+</html>

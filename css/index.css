@@ -1,0 +1,189 @@
+body {
+    padding:0;
+    margin:0;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background-color:rgb(10,10,10);
+    background-repeat:no-repeat;
+    background-size:cover;
+}
+#character {
+    position:absolute;
+    top:0;
+    left:0;
+}
+#lighting {
+    z-index:1;
+    pointer-events:none;
+    display:none;
+    background-color:red;
+}
+#canvas {
+    position:absolute;
+}
+
+canvas:not(#canvas):not(#character) {
+    position:absolute;
+    top:0;
+    left:0;
+    //border:1px solid white;
+    z-index:2
+}
+#lightsCanvas {
+    //background-color:red;
+    display:none;
+}
+
+img {
+    display:none;
+}
+
+#coords,#biomes {
+    position:absolute;
+    pointer-events:none;
+    font-size:2vw;
+    color:white;
+    z-index:3;
+}
+#coords {
+    top:0;
+}
+#biomes {
+    top:10vh;
+}
+
+#inventory {
+    position:absolute;
+    top:0;
+    left:0;
+    height:calc(100% - 105px);
+    z-index:3;
+}
+
+#inventorySmall,#fullInventory {
+    position:absolute;
+    width:640px;
+    background-color:rgba(200,200,200,0.7);
+    left:calc(50vw - 320px);
+    font-size:0;
+}
+#fullInventory {
+    bottom:0;
+}
+
+#crafting ,.furnace{
+    position:relative;
+    margin-left:calc(50vw - 160px);
+    margin-top:80px;
+    background-color:rgba(200,200,200,0.7);
+    white-space:nowrap;
+}
+#crafting {
+    width:240px;
+    height:240px;
+}
+#crafting .inventoryItem{
+    display:inline-block;
+}
+.smallCrafting {
+    width:160px !important;
+    height:160px !important;
+}
+.craftingOutput {
+    position:relative;
+    top:-160px;
+    left:320px;
+    background-color:rgba(200,200,200,0.7);
+}
+
+.furnace {
+    width:auto;
+    height:80px;
+}
+.furnaceOutput {
+    margin-left:60px;
+}
+meter {
+    float:right;
+    transform:rotateZ(-90deg) translate3d(-71px,10px,0px);
+    transform-origin:left;
+
+}
+
+#inventorySmall {
+    bottom:15px;
+    z-index:2;
+}
+.inventoryItem {
+    position:relative;
+    float:left;
+    width:80px;
+    height:80px;
+    box-sizing:border-box;
+    outline:1px solid grey;
+}
+.selected {
+    outline:5px solid black !important;
+}
+.inventoryBlock {
+    width:100%;
+    height:100%;
+}
+.inventoryBlock:not([data-amount="0"]) {
+    background-image:url("../res/tileset_inventory.png");
+    background-position:0px 0px;
+    background-size:3200px;
+    image-rendering: pixelated;
+}
+.inventoryBlock span {
+    font-size:36px;
+    float:right;
+    margin-top:40px;
+    color:white;
+    text-shadow: 1px 1px 10px #000000;
+    font-family:monospace;
+}
+.itemHealth {
+    width:0;
+    height:10px;
+    background-color:green;
+}
+.itemHealthWrapper {
+    position:absolute;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:10px;
+    background-color:red;
+}
+
+.hide {
+    display:none !important;
+}
+
+#cursor {
+    position:absolute;
+    box-sizing:border-box;
+    top:0;
+    left:0;
+    width:30px;
+    height:30px;
+    background-color:rgb(0,0,0,0.3);
+    border:1px solid black;
+    pointer-events:none;
+}
+
+#healthBar {
+    position:absolute;
+    width:200px;
+    height:25px;
+    bottom: 110px;
+    left:calc((100vw / 2) - 320px);
+    background-color:red;
+    z-index:3;
+}
+#healthIndicator {
+    height:25px;
+    background-color:green;
+}
