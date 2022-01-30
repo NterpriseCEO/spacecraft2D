@@ -1,30 +1,25 @@
-import * as world from "../universe_world_gen/terrainGen.js"
+import { Planet } from "../universe_world_gen/planet.js";
 
-let camX = 0,
-    camY = 0,
-    startX = (window.innerWidth/2)-(world.size/2),//Middle of screen
-    startY = Math.floor(((window.innerHeight/2)+world.size)/world.size)*world.size;//Middle of screen
-console.log(startX);
-//Sets camera position in X/Y coords
-export function setCameraPos(x,y) {
-    camX = x;
-    camY = y;
-}
+export class Camera {
+	static camX = 0;
+	static camY = 0;
+	static startX = (window.innerWidth / 2) - (Planet.size / 2);//Middle of screen
+	static startY = Math.floor(((window.innerHeight / 2) + Planet.size) / Planet.size) * Planet.size;//Middle of screen
 
-//Moves camera by X/Y units
-export function moveCamera(x,y) {
-    camX+=x;
-    camY+=y;
-}
+	//Sets camera position in X/Y coords
+	static setCameraPos(x, y) {
+		Camera.camX = x;
+		Camera.camY = y;
+	}
 
-export function reposition() {
-    startX = (window.innerWidth/2)-(world.size/2);
-    startY = Math.floor(((window.innerHeight/2)+world.size)/world.size)*world.size;
-}
+	//Moves camera by X/Y units
+	static moveCamera(x, y) {
+		Camera.camX += x;
+		Camera.camY += y;
+	}
 
-export {
-    camX,
-    camY,
-    startX,
-    startY
+	static reposition() {
+		Camera.startX = (window.innerWidth / 2) - (Planet.size / 2);
+		Camera.startY = Math.floor(((window.innerHeight / 2) + Planet.size) / Planet.size) * Planet.size;
+	}
 }

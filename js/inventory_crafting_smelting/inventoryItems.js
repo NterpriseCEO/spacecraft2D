@@ -1,10 +1,40 @@
-let items = [];
-export function setInventoryItem(i,amount,type,itemHealth) {
-    items[i] = {amount:amount,type:type,itemHealth:itemHealth};
-}
-export function setItemHealth(i,value) {
-    items[i].itemHealth-=value;
-}
-export {
-    items
+import { Crafting } from "./crafting.js";
+import { Furnace } from "./furnace.js";
+
+export class InventoryItems {
+	static items = [];
+
+	static setInventoryItem(i, amount, type, itemHealth, boxType) {
+		switch(boxType) {
+			case 0:
+				InventoryItems.items[i] = { amount: amount, type: type, itemHealth: itemHealth };
+				break;
+			case 1:
+				console.log(i, amount, type, itemHealth);
+				Crafting.craftingBenches[Crafting.currentCraftingBench].setCraftingItem(i, amount, type, itemHealth);
+				break;
+			case 2:
+				Furnace.furnaces[Furnace.currentFurnace].setFurnaceItem(i, amount, type, itemHealth);
+				break;
+		}
+	}
+
+	static addInventoryItem(amount, type, itemHealth) {
+		InventoryItems.items.push({ amount: amount, type: type, itemHealth: itemHealth });
+	}
+
+	static setItemHealth(i, value) {
+		InventoryItems.items[i].itemHealth -= value;
+	}
+
+	static getInventoryItem(i, boxType) {
+		switch(boxType) {
+			case 0:
+				return InventoryItems.items[i];
+			case 1: case 3:
+				return Crafting.craftingBenches[Crafting.currentCraftingBench].getCraftingItem(i);
+			case 2:
+				return Furnace.furnaces[Furnace.currentFurnace].getFurnaceItem(i);
+		}
+	}
 }

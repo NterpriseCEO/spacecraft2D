@@ -9,18 +9,13 @@
     </head>
     <body oncontextmenu = "return false;">
         <template id = "invBox">
-            <div class = "inventoryItem">
-                <div class = "inventoryBlock hide" data-amount = "0" draggable = "true">
-                    <span>0</span>
+            <div class = "itemBox">
+                <div class = "inventoryBlock" draggable = "true">
+                    <span></span>
                     <div class = "itemHealthWrapper hide">
                         <div class = "itemHealth"></div>
                     </div>
                 </div>
-            </div>
-        </template>
-        <template id = "furnace">
-            <div class = "furnace">
-                <meter value = "0" min="0" max="100"></meter>
             </div>
         </template>
 
@@ -28,6 +23,7 @@
         <img id = "plants" src = "res/plants.png" alt="">
         <canvas id = "canvas" width = "600" height = "625"></canvas>
         <canvas id = "chunk" width = "300" height="300"></canvas>
+        <canvas id = "lightChunk" width = "300" height="300"></canvas>
         <canvas id = "lighting" width = "600" height = "625"></canvas>
         <canvas id = "character"></canvas>
         <canvas id = "lightsCanvas" width = "300" height="300"></canvas>
@@ -39,6 +35,9 @@
         <div id = "inventory" class = "hide">
             <div id = "crafting">
             </div>
+            <div id = "furnace">
+                <meter value = "0" min="0" max="100"></meter>
+            </div>
             <div id = "fullInventory">
             </div>
         </div>
@@ -46,5 +45,13 @@
         <img id = "sunMoon" src = "res/sunMoon.png" alt = "">
         <img id = "light" src = "res/lighting.png" alt="">
         <script src = "http://localhost:35729/livereload.js"></script>
+        <script>
+            document.write(
+              '<script src="http://' +
+                (location.host || '${1:localhost}').split(':')[0] +
+                ':${2:35729}/livereload.js?snipver=1"></' +
+                'script>'
+            );
+          </script>
     </body>
 </html>
