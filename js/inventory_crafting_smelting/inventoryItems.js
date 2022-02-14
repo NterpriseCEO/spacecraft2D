@@ -1,5 +1,5 @@
-import { Crafting } from "./crafting.js";
-import { Furnace } from "./furnace.js";
+import { Crafting } from "./Crafting.js";
+import { Furnace } from "./Furnace.js";
 
 export class InventoryItems {
 	static items = [];
@@ -13,7 +13,7 @@ export class InventoryItems {
 				console.log(i, amount, type, itemHealth);
 				Crafting.craftingBenches[Crafting.currentCraftingBench].setCraftingItem(i, amount, type, itemHealth);
 				break;
-			case 2:
+			case 2: case 4:
 				Furnace.furnaces[Furnace.currentFurnace].setFurnaceItem(i, amount, type, itemHealth);
 				break;
 		}
@@ -33,7 +33,7 @@ export class InventoryItems {
 				return InventoryItems.items[i];
 			case 1: case 3:
 				return Crafting.craftingBenches[Crafting.currentCraftingBench].getCraftingItem(i);
-			case 2:
+			case 2: case 4:
 				return Furnace.furnaces[Furnace.currentFurnace].getFurnaceItem(i);
 		}
 	}

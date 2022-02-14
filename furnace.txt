@@ -4,3 +4,5 @@ Furnace
     \___ Delete furnace (on removal from world)
     	    \___ Remove furnace from the list of elements
 	    \___ Update the index of all furnaces
+
+bug where cannot shift click in furnace

@@ -1,6 +1,6 @@
-import { Planet } from "./planet.js";
+import { Planet } from "./Planet.js";
 import { Earth } from "./Earth.js";
-import { Tileset } from "./tilesetTerrain.js";
+import { Tileset } from "./TilesetTerrain.js";
 
 
 export class Chunks {

@@ -1,9 +1,9 @@
-import { Camera } from "../engine/camera.js";
-import { Block } from "../engine/block.js";
+import { Camera } from "../engine/Camera.js";
+import { Block } from "../engine/Block.js";
 
-import { Planet } from "../universe_world_gen/planet.js";
+import { Planet } from "../universe_world_gen/Planet.js";
 import { Earth } from "../universe_world_gen/Earth.js";
-import { BlockPlacement } from "../object_placement/blockPlacement.js";
+import { BlockPlacement } from "../object_placement/BlockPlacement.js";
 
 export class Click {
 

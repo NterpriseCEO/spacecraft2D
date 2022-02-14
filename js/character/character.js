@@ -1,11 +1,11 @@
-import { Canvas } from "../engine/canvas.js";
-import { Camera } from "../engine/camera.js";
-import { Animation } from "../engine/animations.js";
+import { Canvas } from "../engine/Canvas.js";
+import { Camera } from "../engine/Camera.js";
+import { Animation } from "../engine/Animations.js";
 
-import { Tileset } from "../universe_world_gen/tilesetTerrain.js";
-import { Planet } from "../universe_world_gen/planet.js";
+import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
+import { Planet } from "../universe_world_gen/Planet.js";
 import { Earth } from "../universe_world_gen/Earth.js";
-import { Key } from "../events/keys.js";
+import { Key } from "../events/Keys.js";
 
 
 export class Character {

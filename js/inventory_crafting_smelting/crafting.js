@@ -1,6 +1,5 @@
-import { InventoryItems } from "../inventory_crafting_smelting/inventoryItems.js";
-import { craftingRecipies } from "../inventory_crafting_smelting/craftingRecipies.js";
-import { Tileset } from "../universe_world_gen/tilesetTerrain.js";
+import { craftingRecipies } from "./CraftingRecipies.js";
+import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
 
 export class Crafting {
 	
@@ -276,7 +275,7 @@ export class Crafting {
 	}
 	// static #addInvBox(i) {
 	// 	//Sets the invitem to amount = 0, type = null
-	// 	InventoryItems.addInventoryItem(0, null, null);
+	// 	InventoryItems.E(0, null, null);
 	// 	//Creates inventoryItem from the template and adds it to the screen
 
 	// 	Crafting.#clone.getElementsByClassName("inventoryBlock")[0].setAttribute("data-index", i);

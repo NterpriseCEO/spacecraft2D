@@ -1,8 +1,8 @@
-import { Tileset } from "../universe_world_gen/tilesetTerrain.js";
+import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
 
-import { Crafting } from "../inventory_crafting_smelting/crafting.js";
-import { Furnace } from "../inventory_crafting_smelting/furnace.js";
-import { InventoryItems } from "../inventory_crafting_smelting/inventoryItems.js";
+import { Crafting } from "./Crafting.js";
+import { Furnace } from "./Furnace.js";
+import { InventoryItems } from "./InventoryItems.js";
 
 let _this;
 export class Inventory {
@@ -224,8 +224,6 @@ export class Inventory {
 		let tItem = InventoryItems.getInventoryItem(tIndex, type),
 			sItem = InventoryItems.getInventoryItem(sIndex, type2);
 
-		console.log(type, type2);
-
 		if(sItem == tItem || sItem.type == Tileset.AIR) {
 			return;
 		}
@@ -235,9 +233,9 @@ export class Inventory {
 
 		let tBGPos,
 			sBGPos = sChild.style.backgroundPosition;
-		
+
 		let divide = Math.floor(sItem.amount/4) > 1 ? Math.floor(sItem.amount/4) : 1;
-		
+
 		if(tItem.amount === 0) {
 			tAmount = this.#shiftPressed ? divide : sItem.amount;
 			sAmount = sItem.amount - tAmount;
@@ -270,8 +268,12 @@ export class Inventory {
 			}
 		}
 
+		console.log(sIndex, sAmount);
+
 		InventoryItems.setInventoryItem(tIndex, tAmount, tType, null, type);
 		InventoryItems.setInventoryItem(sIndex, sAmount, sType, null, type2);
+
+		console.log(InventoryItems.getInventoryItem(sIndex, type2));
 		
 		tBGPos = "-" + (tType.x * 4) + "px -" + (tType.y * 4) + "px";
 		tChild.style.backgroundPosition = tBGPos;

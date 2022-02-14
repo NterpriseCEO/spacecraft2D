@@ -1,6 +1,6 @@
-import { Camera } from "./camera.js";
+import { Camera } from "./Camera.js";
 
-import { Planet } from "../universe_world_gen/planet.js";
+import { Planet } from "../universe_world_gen/Planet.js";
 
 export class Block {
 	static imageShape(ctx, img, ix, iy, iw, ih, x, y, w, h) {

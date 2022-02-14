@@ -1,4 +1,4 @@
-import { Planet } from "../universe_world_gen/planet.js";
+import { Planet } from "../universe_world_gen/Planet.js";
 
 export class Camera {
 	static camX = 0;

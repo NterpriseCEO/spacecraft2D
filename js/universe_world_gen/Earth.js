@@ -1,5 +1,5 @@
-import { Planet } from "./planet.js";
-import { Tileset } from "./tilesetTerrain.js";
+import { Planet } from "./Planet.js";
+import { Tileset } from "./TilesetTerrain.js";
 
 export class Earth extends Planet {
 

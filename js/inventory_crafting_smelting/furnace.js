@@ -1,5 +1,5 @@
-import { InventoryItems } from "../inventory_crafting_smelting/inventoryItems.js";
-import { Tileset } from "../universe_world_gen/tilesetTerrain.js";
+import { InventoryItems } from "./InventoryItems.js";
+import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
 
 let furnace = 0;
 
@@ -124,25 +124,50 @@ export class Furnace {
 
 		this.#smeltingTimer = setInterval(() => {
 
-			if(_this.#fuelLife === 0) {
-				_this.#fuelLife = _this.getFurnaceItem(1).type.fuelLife;
-				_this.decrementFurnaceItem(1);
+			let inputAmount = _this.getFurnaceItem(0).amount,
+				fuelAmount = _this.getFurnaceItem(1).amount;
+
+			if(inputAmount === 0) {
+				_this.setFurnaceItem(0, 0, Tileset.AIR, null);
 			}
 
-			if(_this.getFurnaceItem(1).amount == 0) {
-				cancelInterval(_this.#smeltingTimer);
+			if(fuelAmount == 0) {
+				_this.setFurnaceItem(1, 0, Tileset.AIR, null);
+			}
+
+			console.log("output amount: ", _this.getFurnaceItem(2));
+
+			if(inputAmount === 0 || fuelAmount === 0) {
+				this.#metre.value = 0;
+				console.log("hllo")
+				if(Furnace.currentFurnace == _this.#furnaceID) {
+					_this.#renderFurnaceItems();
+				}
+				clearInterval(_this.#smeltingTimer);
+				return;
 			}
 
 			_this.#smeltingTime+=10;
-			_this.#metre.value = _this.#smeltingTime;
 
 			if(_this.#smeltingTime == 100) {
 				_this.setFuelLife(--_this.#fuelLife);
-				console.log("this is the fuel life: " + _this.#fuelLife);
 				_this.setFurnaceItem(2, _this.getFurnaceItem(2).amount + 1, furnaceOutput, null);
 				_this.decrementFurnaceItem(0);
-				_this.#renderFurnaceItems();
+
+				if(_this.#fuelLife === 0) {
+					_this.#fuelLife = _this.getFurnaceItem(1).type.fuelLife;
+					_this.decrementFurnaceItem(1);
+				}
+
+				if(Furnace.currentFurnace == _this.#furnaceID) {
+					console.log(Furnace.currentFurnace,_this.#furnaceID, _this.#fuelLife, "poggers");
+					_this.#renderFurnaceItems();
+				}
 				_this.#smeltingTime = 0;
+			}
+
+			if(Furnace.currentFurnace == _this.#furnaceID) {
+				_this.#metre.value = _this.#smeltingTime;
 			}
 		},1000);
 	}

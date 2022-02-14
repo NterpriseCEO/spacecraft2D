@@ -135,6 +135,15 @@ export class Tileset {
 		miningIncrease: 3,
 		minableItems: ["tree"]
 	};
+	static IRON_PICKAXE = {
+		id: "iron_pickaxe",
+		x: 340, y: 0,
+		miningSpeed: 100,
+		damage: 0,
+		canPlace: false,
+		miningIncrease: 3,
+		minableItems: ["rock", "iron", "gold", "diamond", "furnace"]
+	};
 	//static LOG = {x:60,y:0,miningSpeed:2000,damage:2};
 	static STK = {
 		id: "stick",

@@ -5,7 +5,8 @@ let craftingRecipies = {
 		{ ingredients: ["leaves"], output: [["string"], ["torch"]] },
 	],
 	"010010010": [
-		{ ingredients: ["air", "boulder", "air", "air", "string", "air", "air", "stick", "air"], output: [["stone_pickaxe"]] }
+		{ ingredients: ["air", "boulder", "air", "air", "string", "air", "air", "stick", "air"], output: [["stone_pickaxe"]] },
+		{ ingredients: ["air", "iron_ingot", "air", "air", "string", "air", "air", "stick", "air"], output: [["iron_pickaxe"]] }
 	],
 	"110010010": [
 		{ ingredients: ["boulder", "boulder", "air", "air", "string", "air", "air", "stick", "air"], output: [["stone_axe"]] }

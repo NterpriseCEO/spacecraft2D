@@ -1,11 +1,11 @@
-import { Camera } from "../engine/camera.js";
-import { Tileset } from "../universe_world_gen/tilesetTerrain.js";
-import { Chunks } from "../universe_world_gen/updateChunks.js";
-import { Planet } from "../universe_world_gen/planet.js";
+import { Camera } from "../engine/Camera.js";
+import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
+import { Chunks } from "../universe_world_gen/UpdateChunks.js";
+import { Planet } from "../universe_world_gen/Planet.js";
 import { Earth } from "../universe_world_gen/Earth.js";
-import { Inventory } from "../inventory_crafting_smelting/inventory.js";
-import { Crafting } from "../inventory_crafting_smelting/crafting.js";
-import { Furnace } from "../inventory_crafting_smelting/furnace.js";
+import { Inventory } from "../inventory_crafting_smelting/Inventory.js";
+import { Crafting } from "../inventory_crafting_smelting/Crafting.js";
+import { Furnace } from "../inventory_crafting_smelting/Furnace.js";
 
 export class BlockPlacement {
 

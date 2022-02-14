@@ -1,14 +1,14 @@
-import { Canvas } from "./engine/canvas.js";
-import { Camera } from "./engine/camera.js";
-import { Block } from "./engine/block.js";
+import { Canvas } from "./engine/Canvas.js";
+import { Camera } from "./engine/Camera.js";
+import { Block } from "./engine/Block.js";
 
-import { Tileset } from "./universe_world_gen/tilesetTerrain.js";
+import { Tileset } from "./universe_world_gen/TilesetTerrain.js";
 
-import { RenderWorld } from "./universe_world_gen/renderWorld.js";
-import { Click } from "./events/events.js";
-import { Character } from "./character/character.js";
-import { AtmosphereLighting } from "./atmosphere_lighting/atmosphereLighting.js";
-import { BlockPlacement } from "./object_placement/blockPlacement.js";
+import { RenderWorld } from "./universe_world_gen/RenderWorld.js";
+import { Click } from "./events/Events.js";
+import { Character } from "./character/Character.js";
+import { AtmosphereLighting } from "./atmosphere_lighting/AtmosphereLighting.js";
+import { BlockPlacement } from "./object_placement/BlockPlacement.js";
 
 //Checks if page is fully loaded
 document.onreadystatechange = function () {
@@ -39,16 +39,16 @@ function init() {
 			detail: ["furnace", 2]
 		}));
 		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["crafting_bench", 10]
+			detail: ["log", 64]
 		}));
 		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["log", 10]
+			detail: ["iron", 64]
 		}));
 		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["iron", 10]
+			detail: ["string", 6]
 		}));
 		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["coal", 10]
+			detail: ["stick", 10]
 		}));
 		window.removeEventListener("click", addItems);
 	}

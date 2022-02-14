@@ -1,8 +1,8 @@
-import { Canvas } from "../engine/canvas.js";
-import { Camera } from "../engine/camera.js";
-import { Block } from "../engine/block.js";
+import { Canvas } from "../engine/Canvas.js";
+import { Camera } from "../engine/Camera.js";
+import { Block } from "../engine/Block.js";
 
-import { Planet } from "../universe_world_gen/planet.js";
+import { Planet } from "../universe_world_gen/Planet.js";
 
 export class AtmosphereLighting {
 
