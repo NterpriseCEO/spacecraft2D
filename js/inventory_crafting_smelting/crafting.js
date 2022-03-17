@@ -1,8 +1,7 @@
-import { craftingRecipies } from "./CraftingRecipies.js";
+import { craftingRecipes } from "./craftingRecipes.js";
 import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
 
 export class Crafting {
-	
 	static craftingBoxes;
 	#invBoxTemp;
 	#craftingInputsOutputs = [null, null, null, null, null, null, null, null, null, null, null];
@@ -17,15 +16,18 @@ export class Crafting {
 	static currentCraftingBench = 0;
 
 	constructor() {
+		//Initializes the crafting boxes variables
 		Crafting.craftingBoxes = document.getElementsByClassName("craftingItem");
 		this.#invBoxTemp = document.getElementById("invBox");
 		Crafting.#clone = this.#invBoxTemp.content.querySelector(".itemBox");
 		Crafting.#clone.classList.remove("inventoryItem");
 
+		//Sets the craftingItems to be air blocks
 		for(let i = 0; i < this.#craftingInputsOutputs.length; i++) {
 			this.setCraftingItem(i, 0, Tileset.AIR, 0);
 		}
 
+		//Sets the current crafting bench equal to the length of craftingBenches
 		this.#current = Crafting.craftingBenches.length;
 
 		let current = this.#current;
@@ -43,15 +45,17 @@ export class Crafting {
 	static initCrafting() {
 		for (let i = 0; i < 11; i++) {
 			//Sets the invitem to amount = 0, type = null
-			//Creates inventoryItem from the template and adds it to the screen
+			//Creates craftingItem from the template and adds it to the screen
 
 			Crafting.#clone.setAttribute("data-index", Crafting.#i);
 			let clone = Crafting.#clone.cloneNode(true);
 			clone.classList.add("craftingItem");
 			clone.classList.add("input");
+			//Adds the advancedCrafting class to the crafting table if neccessary
 			if (Crafting.#i == 2 || Crafting.#i == 5 || Crafting.#i == 6 || Crafting.#i == 7 || Crafting.#i == 8) {
 				clone.classList.add("advancedCrafting");
 			}
+			//Adds craftingOutput class to tje crafting table if neccessary
 			if (Crafting.#i == 9 || Crafting.#i == 10) {
 				clone.classList.add("craftingOutput");
 				clone.classList.add("output");
@@ -59,6 +63,7 @@ export class Crafting {
 
 			Crafting.#i++;
 
+			//Add the crafting box to the crafting table
 			document.getElementById("crafting").append(clone);
 		}
 	}
@@ -68,49 +73,72 @@ export class Crafting {
 	}
 
 	loadCraftingBench(isAdvanced) {
-
+		//Loads the crafting table that was clicked on
 		document.getElementById("furnace").classList.add("hide");
+		let craftingWrapper = document.getElementById("crafting");
 
-		Crafting.craftingBenches[Crafting.currentCraftingBench].checkRecipes();
-		
+		//Checks if the crafting items match a crafting recipe
+		try {
+			Crafting.craftingBenches[Crafting.currentCraftingBench].checkRecipes();
+		} catch(e) {
+			console.log(e);
+		}
+
+		//Shows the advanced crafting boxes when using a full sized crafting table
+		craftingWrapper.classList.remove("advancedCrafting");
 		if(isAdvanced) {
 			let advancedCrafting = document.getElementsByClassName("advancedCrafting");
+			craftingWrapper.classList.add("advancedCrafting");
+			
 			for (let i = 0; i < advancedCrafting.length; i++) {
 				advancedCrafting[i].classList.remove("hide");
 			}
 			document.getElementById("crafting").classList.remove("smallCrafting");
 			document.getElementById("inventory").classList.remove("hide");
 		}
-		
-		let cBench = Crafting.craftingBenches[Crafting.currentCraftingBench];
 	
+		//Renders all items in the crafting table
 		for(let i = 0; i < 9; i++) {
-			let craftingItem = cBench.getCraftingItem(i),
-				cType = craftingItem.type;
-
-			let craftingItemBox = Crafting.craftingBoxes[i],
-				invBlock = craftingItemBox.querySelector(".inventoryBlock");
-			
-			invBlock.style.backgroundPosition = "-" + (cType.x * 4) + "px -" + (cType.y * 4) + "px";
-			invBlock.querySelector("span").innerHTML = craftingItem.amount > 0 ? craftingItem.amount : "";
+			this.#renderCraftingItem(i);
 		}
 	}
 
+	//Sets the values of a specific crafting item
 	setCraftingItem(i, amount, type, itemHealth) {
 		this.#craftingInputsOutputs[i] = { amount: amount, type: type, itemHealth: itemHealth };
 	}
 
+	//Gets a specific crafting item
 	getCraftingItem(i) {
 		return this.#craftingInputsOutputs[i];
 	}
 
-	checkRecipes() {
-		for (let i = 0; i < 2; i++) {
+	//Decrements the value of a specific crafting item
+	decrementCraftingItem(i) {
+		let craftingItem = this.getCraftingItem(i);
+		craftingItem.amount--;
+		this.setCraftingItem(i, craftingItem.amount, craftingItem.amount > 0 ? craftingItem.type : Tileset.AIR, craftingItem.itemHealth);
+	}
 
-			let box2 = Crafting.craftingBoxes[9 + i].getElementsByClassName("inventoryBlock")[0];
-			box2.style.backgroundPosition = "";
-			box2.setAttribute("data-amount", 0);
-			box2.getElementsByTagName("span")[0].innerText = "";
+	//Renders a spefiic crafting item
+	#renderCraftingItem(i) {
+		let craftingItem = this.getCraftingItem(i),
+			cType = craftingItem.type;
+
+		let craftingItemBox = Crafting.craftingBoxes[i],
+			invBlock = craftingItemBox.querySelector(".inventoryBlock");
+
+		//Sets the position of the inventory block image which corresponds to a spefic item in the tileset
+		invBlock.style.backgroundPosition = "-" + (cType.x * 4) + "px -" + (cType.y * 4) + "px";
+		invBlock.querySelector("span").innerHTML = craftingItem.amount > 0 ? craftingItem.amount : "";
+	}
+
+	checkRecipes() {
+		//Clears the crafting table outputs
+		for (let i = 0; i < 2; i++) {
+			let output = Crafting.craftingBoxes[9 + i].getElementsByClassName("inventoryBlock")[0];
+			output.style.backgroundPosition = "";
+			output.getElementsByTagName("span")[0].innerText = "";
 
 			this.setCraftingItem(9 + i, 0, Tileset.AIR, 0);
 		}
@@ -118,199 +146,58 @@ export class Crafting {
 		let value = "",
 			count = 0,
 			correct = true,
-			//itemsAmnt = 0,
-			output;
-		//Loop through all crafting boxes
-		for (let i = 0; i < 9; i++) {
-			//Append 1/0 to value variables depending on if crafting box has content
-			if (this.getCraftingItem(i).type != Tileset.AIR) {
-				value += "1";
-				count++;
-			} else {
-				value += "0";
-			}
-		}
+			correctRecipe;
 
-		if (count == 1) {
+		//Checks how many boxes in the crafting table are filled
+		this.#craftingInputsOutputs.slice(0, 9).forEach((i) => {
+			value+= i.type == Tileset.AIR ? "0" : "1";
+			if(i.type !== Tileset.AIR) {
+				count++;
+			}
+		});
+
+		if(count == 1) {
 			value = "100000000";
 		}
 
-		try {
-			//Loop through crafting recipes within the object property of "value"
-			for (let i = 0; i < craftingRecipies[value].length; i++) {
-				let recipe = craftingRecipies[value][i];
+		if(count == 0) {
+			return;
+		}
 
-				//If there was more than 1 item in the crafting table
-				if (value != "100000000") {
-					//Loop through all boxes in crafting table
-					for (let k = 0; k < 9; k++) {
-						/*If there's an item in the box check if it matches
-						  the item at that position in the crafting recipe*/
-						let type = this.getCraftingItem(k).type;
-						console.log("This is the type: " + JSON.stringify(type));
-						if (type != Tileset.AIR) {
-							//If not matching, set correct to false
-							if (recipe.ingredients[k] != type.id) {
-								correct = false;
-							}
-							//If all recipe ingredients checked, set output to recipe output
-							if (k == recipe.ingredients.length) {
-								output = recipe.output;
-								break;
-							}
-						}
-					}
-					//If loop finished and still correct, set output to recipe output
-					console.log("correct: " + correct);
-					if (correct) {
-						output = recipe.output;
-						break;
-					}
-				} else {
-					/*If only one ingredient, loop through crafting boxes
-					  and check if one of them matches the crafting recipe*/
-					try {
-						for (let k = 0; k < 9; k++) {
-							let type = this.getCraftingItem(k).type;
-							if (type != null) {
-								if (recipe.ingredients[0] == type.id) {
-									output = recipe.output;
-									break;
-									//itemsAmnt++;
-								}
-							}
-						}
-					} catch (e) {
-						console.log(e);
-					}
-				}
+		//Loops through all recipes
+		craftingRecipes[value].every((recipe) => {
+			if(count > 1) {
+				//Checks if each crafting item in the crafting table matches each item in the recipe
+				correct = this.#craftingInputsOutputs.slice(0, -2).every((input, i) => input.type == recipe.ingredients[i]);
+			}else {
+				//Checks if the amount of mataching crafting items in the crafting table = 1
+				correct = this.#craftingInputsOutputs.filter((input, i) => input.type == recipe.ingredients[0]).length == 1;
 			}
-		} catch (e) {
-			correct = false;
-		}
-		try {
-			if (correct) {
-				//If correct, loop through objects in tileset
-				for (let i = 0; i < output.length; i++) {
-					//If output id matches id of object set crafting outputs to this item
-					for (let [key, value] of Object.entries(Tileset)) {
-						if (value.id == output[i][0]) {
-							let itemHealth = (value.id != "stone_pickaxe") && (value.id != "stone_axe") ? null : 100;
-							
-							let box = Crafting.craftingBoxes[9 + i].getElementsByClassName("inventoryBlock")[0];
-							//Set item health width to 0
-							box.getElementsByClassName("itemHealth")[0].style.width = 0;
-							//Set box backgroundPosition to tileset xy coords
-							let val = (output[i][1] || 1);
-							this.setCraftingItem(9 + i, val, value, itemHealth);
-	
-							box.style.backgroundPosition = "-" + (value.x * 4) + "px " + "-" + (value.y * 4) + "px";
-	
-							box.classList.remove("hide");
-							box.getElementsByTagName("span")[0].innerText = val;
-							//If item should have health, set health to 100%
-							if (itemHealth == 100) {
-								box.getElementsByClassName("itemHealth")[0].style.width = "100%";
-							}
-							break;
-						}
-					}
-				}
-			} else {
-				//If not correct, hide crafting output item
-				let box = Crafting.craftingBoxes[9].getElementsByClassName("inventoryBlock")[0];
-				box.classList.add("hide");
+
+			//Sets the correctRecipe and breaks the loop if the recipe is correct
+			if(correct) {
+				correctRecipe = recipe;
+				return false;
 			}
-		} catch(e) {
-			//Error in recipe
-		}
+			return true;
+		});
+
+		//Sets the crafting table outputs
+		correctRecipe.output.forEach((recipe, i) => {
+			const itemHealth = recipe.type.miningIncrease ? 100 : null;
+
+			this.setCraftingItem(9+i, recipe.amount, recipe.type, itemHealth);
+			this.#renderCraftingItem(9+i);
+		});
 	}
 
+	//Decrements each item in the crafting table
 	completeRecipe() {
-		let complete = false;
-		//Loop through boxes in crafting table
-		for (let i = 0; i < 11; i++) {
-			//Loop through boxes in crafting
-			let box = Crafting.craftingBoxes[i].getElementsByClassName("inventoryBlock")[0];
-			//If not crafting output remove 1 item
-			if (i != 9 && i != 10) {
-				let item = this.getCraftingItem(i);
-				console.log(item.amount);
-				if(item.amount-1 > 0) {
-					this.setCraftingItem(i, item.amount - 1, item.type, item.health);
-				}else {
-					this.setCraftingItem(i, 0, Tileset.AIR, 0);
-					for(let j = 0; j < 2; j++) {
-						let box2 = Crafting.craftingBoxes[9 + j].getElementsByClassName("inventoryBlock")[0];
-						box2.style.backgroundPosition = "";
-						box2.querySelector("span").innerText = "";
-						this.setCraftingItem(9 + j, 0, Tileset.AIR, 0);
-					}
-					box.style.backgroundPosition = "";
-				}
-				box.querySelector("span").innerText = item.amount > 1 ? item.amount - 1 : "";
-			}
+		for(let i = 0; i < 9; i++) {
+			this.decrementCraftingItem(i);
 
-			//If no items in box, set complete to true and hide item in box
-			// if (parseInt(box.getAttribute("data-amount")) == 0) {
-			// 	complete = true;
-			// 	this.setCraftingItem(i, 0, null, null);
-
-			// 	box.classList.add("hide");
-			// 	box.style.backgroundPosition = "";
-			// 	box.getElementsByTagName("span")[0].innerText = 0;
-			// }
-			// if (complete) {
-			// 	/*If cannot craft anything else, hide
-			// 	  crafting outputs and set outputs amount to 0*/
-			// 	for (let j = 0; j < 2; j++) {
-			// 		let box2 = Crafting.#craftingBoxes[9 + j].getElementsByClassName("inventoryBlock")[0];
-			// 		box2.classList.add("hide");
-			// 		box2.style.backgroundPosition = "";
-			// 		box2.getElementsByTagName("span")[0].innerText = 0;
-			// 	}
-			// }
+			this.#renderCraftingItem(i);
 		}
 		this.checkRecipes();
 	}
-	// static #addInvBox(i) {
-	// 	//Sets the invitem to amount = 0, type = null
-	// 	InventoryItems.E(0, null, null);
-	// 	//Creates inventoryItem from the template and adds it to the screen
-
-	// 	Crafting.#clone.getElementsByClassName("inventoryBlock")[0].setAttribute("data-index", i);
-	// 	let clone = Crafting.#clone.cloneNode(true);
-	// 	clone.classList.add("craftingItem");
-	// 	clone.classList.add("input");
-	// 	if (i == 34 || i == 37 || i == 38 || i == 39 || i == 40) {
-	// 		clone.classList.add("advancedCrafting");
-	// 	}
-	// 	if (i == 41 || i == 42) {
-	// 		clone.classList.add("craftingOutput");
-	// 		clone.classList.add("output");
-	// 	}
-	// 	document.getElementById("crafting").append(clone);
-	// }
-
-	// static #addCraftingBox() {
-	// 	//Sets the invitem to amount = 0, type = null
-	// 	InventoryItems.addInventoryItem(0, null, null);
-	// 	//Creates inventoryItem from the template and adds it to the screen
-
-	// 	Crafting.#clone.getElementsByClassName("inventoryBlock")[0].setAttribute("data-index", Crafting.#i);
-	// 	let clone = Crafting.#clone.cloneNode(true);
-	// 	clone.classList.add("craftingItem");
-	// 	clone.classList.add("input");
-	// 	if (Crafting.#i == 2 || Crafting.#i == 5 || Crafting.#i == 6 || Crafting.#i == 7 || Crafting.#i == 8) {
-	// 		clone.classList.add("advancedCrafting");
-	// 	}
-	// 	if (Crafting.#i == 9 || Crafting.#i == 10) {
-	// 		clone.classList.add("craftingOutput");
-	// 		clone.classList.add("output");
-	// 	}
-
-	// 	Crafting.#i++;
-
-	// 	document.getElementById("crafting").append(clone);
-	// }
 }

@@ -149,7 +149,6 @@ export class AtmosphereLighting {
 
 	update() {
 		//console.time("speed");
-		//console.log(this.#timer,this.#brightnessPoints[this.#counter][0],this.#opacity);
 
 		this.#sunMoonRotation += 360 / 72000;
 

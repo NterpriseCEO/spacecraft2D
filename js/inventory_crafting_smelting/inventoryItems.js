@@ -10,7 +10,6 @@ export class InventoryItems {
 				InventoryItems.items[i] = { amount: amount, type: type, itemHealth: itemHealth };
 				break;
 			case 1:
-				console.log(i, amount, type, itemHealth);
 				Crafting.craftingBenches[Crafting.currentCraftingBench].setCraftingItem(i, amount, type, itemHealth);
 				break;
 			case 2: case 4:

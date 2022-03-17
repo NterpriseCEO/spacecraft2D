@@ -35,11 +35,11 @@ export class Character {
 		this.characterAnimation = new Animation(20);
 
 		//super()
-		//Refenreces the main canvas context
+		// the position of the character on the xy axis
 		this.#posY = Math.floor(((window.innerHeight / 2) - Planet.size) / Planet.size) * Planet.size;
 		this.#posX = (window.innerWidth / 2) - (Planet.size / 2);
-		console.log(this.#posX / 30);
 
+		// Sets the position of the character relative to the player
 		Camera.setCameraPos(0, Planet.size * 165);
 
 		//References the coordinates element
@@ -62,15 +62,16 @@ export class Character {
 	}
 
 	renderCharacter() {
-		//Set moving to false
+		//Set moving to false and checks collision
 		this.checkCollision();
 		this.isMoving = false;
 
+		// Move camera right
 		if (Key.isDown("d") || Key.isDown("D")) {
-			//Move camera right
 			Camera.moveCamera(this.#speed[1], 0);
 			this.isMoving = true;
 		}
+		// Camera move up
 		if (Key.isDown("w") || Key.isDown("W")) {
 			this.#canFall = false;
 			Camera.moveCamera(0, -this.#speed[0]);
@@ -80,8 +81,8 @@ export class Character {
 				this.#spd = 2;
 			}
 		}
+		//Move camera left
 		if (Key.isDown("a") || Key.isDown("A")) {
-			//Move camera left
 			Camera.moveCamera(-this.#speed[0], 0);
 			this.isMoving = true;
 		}
@@ -139,7 +140,6 @@ export class Character {
 		}
 		//Draw the character and correct frames
 		Canvas.ctx.drawImage(Tileset.image, this.characterAnimation.getFrame(), Math.round(Tileset.character.y), 20, 40, this.#posX, this.#posY, Math.round(Planet.size), Math.round(Planet.size * 2));
-		//console.log(this.#spd);
 		//Show the characters coordinates position
 		this.#coords.innerHTML = "X: " + Math.floor(Camera.camX / Planet.size) + "<br>Y: " + Math.floor(Camera.camY / Planet.size);
 	}
@@ -147,7 +147,6 @@ export class Character {
 		return (a || b) && !(a && b);
 	}
 	checkCollision() {
-		//console.log(this.#spd,this.#isFalling);
 		//Get characters X/Y coords in block coords
 		let x = Math.floor(Camera.camX / Planet.size),
 			y = Math.floor(Camera.camY / Planet.size);
@@ -172,9 +171,10 @@ export class Character {
 						this.#canFall = false;
 						//If player has fallen a certain distance, calculate damage to player
 						if (this.#blockFall != 0 && Camera.camY - this.#blockFall > Planet.size * 4) {
+							console.log((Camera.camY - this.#blockFall) / 10, Camera.camY, this.#blockFall);
+							
+							this.#health -= (Camera.camY - this.#blockFall) / 5;
 							this.#blockFall = 0;
-
-							this.#health -= (Camera.camY - this.#blockFall) / 150;
 							this.#healthBar.style.width = (this.#health * 2) + "px";
 						}
 						this.#isFalling = false;
@@ -198,7 +198,6 @@ export class Character {
 				let x1 = x + 1 >= 1000 ? 0 : x + 1,
 					pos = Earth.world[y - 3][x],
 					c = Earth.world[y - 3][x1];
-				//console.log(Camera.camX,Camera.camX+Planet.size-(Planet.size*999),x1*Planet.size,"  ",Camera.camX+Planet.size,x1*Planet.size);
 				//Checks if world xy pos is air or camera pos is at block boundary
 				if (Camera.camY == y * Planet.size && (!pos.canWalkThrough || !c.canWalkThrough)) {
 					//Checks if camera x is colliding with block at feet
@@ -218,16 +217,7 @@ export class Character {
 			if (Earth.dropItems[Y][X] != undefined) {
 				let length = Earth.dropItems[Y][X].length;
 				//Loop through all blocks at drop point
-				for (let i = 0; i < length; i++) {
-					//Add block to inventory
-					window.dispatchEvent(new CustomEvent("addInventoryItem", {
-						detail: Earth.dropItems[Y][X][Earth.dropItems[Y][X].length - 1]
-					}));
-					window.addEventListener("hasSpace", this.removeDropItem(X, Y, i));
-				}
-				let xx = Math.floor(X / 10) * 10,
-					yy = Math.floor(Y / 10) * 10;
-				window.dispatchEvent(new CustomEvent("updateDroppables", { detail: [xx, yy] }));
+				this.collectDroppables(X, Y);
 			}
 		}
 	}
@@ -236,7 +226,6 @@ export class Character {
 			//XY position
 		}
 		if (Earth.world[y + my] != undefined) {
-			//console.log(x+mx);
 			let x1 = x + mx >= 1000 ? 0 : x + mx == -1 ? 999 : x + mx,
 				x2 = x == 1000 ? 0 : x;
 			if (Earth.world[y + my][x1] != undefined) {
@@ -244,9 +233,7 @@ export class Character {
 					c = Earth.world[y][x1],
 					r = Earth.world[y][x2];
 				if (Camera.camX == x2 * Planet.size && (!pos.canWalkThrough || (!c.canWalkThrough && r.canWalkThrough))) {
-					//console.log(x1,x2);
 					this.#speed[d] = 0;
-					//console.log(this.#speed[d],x);
 					this.isMoving = false;
 				}
 			}
@@ -257,9 +244,15 @@ export class Character {
 	}
 	damage(value) {
 		this.#health -= value;
+		console.log(this.#health);
+		this.#healthBar.style.width = (this.#health * 2) + "px";
 	}
 	setHealth(value) {
 		this.#health = value;
+		this.#healthBar.style.width = (this.#health * 2) + "px";
+	}
+	getHealth() {
+		return this.#health;
 	}
 	reset() {
 		//Reset health
@@ -286,5 +279,19 @@ export class Character {
 		this.#posY = Math.floor(((window.innerHeight / 2) - Planet.size) / Planet.size) * Planet.size;
 		this.#posX = (window.innerWidth / 2) - (Planet.size / 2);
 		Camera.reposition();
+	}
+
+	collectDroppables(X, Y) {
+		for (let i = 0; i < length; i++) {
+			//Add block to inventory
+			window.dispatchEvent(new CustomEvent("addInventoryItem", {
+				detail: Earth.dropItems[Y][X][Earth.dropItems[Y][X].length - 1]
+			}));
+			window.addEventListener("hasSpace", this.removeDropItem(X, Y, i));
+		}
+		//Send event to remvoe droppables from the world
+		let xx = Math.floor(X / 10) * 10,
+			yy = Math.floor(Y / 10) * 10;
+		window.dispatchEvent(new CustomEvent("updateDroppables", { detail: [xx, yy] }));
 	}
 }

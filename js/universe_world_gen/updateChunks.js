@@ -200,7 +200,6 @@ export class Chunks {
 						if (yy >= Y + 10) {
 							chunksToUpdate.push([cY, Math.floor(x / 10) * 10]);
 						} else if (y % 10 == 0) {
-							//console.log((Y/10)-1);
 							chunksToUpdate.push([((Y / 10) - 1) * 10, Math.floor(x / 10) * 10]);
 						}
 						//Draw droppables in chunk

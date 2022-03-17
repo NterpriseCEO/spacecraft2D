@@ -35,20 +35,16 @@ function init() {
 	});
 
 	function addItems() {
-		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["furnace", 2]
-		}));
-		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["log", 64]
-		}));
-		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["iron", 64]
-		}));
-		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["string", 6]
-		}));
-		window.dispatchEvent(new CustomEvent("addNewItem", {
-			detail: ["stick", 10]
+		window.dispatchEvent(new CustomEvent("addNewItems", {
+			detail: [
+				[Tileset.FRNC, 2, null],
+				[Tileset.LOG, 64, null],
+				[Tileset.IR, 64, null],
+				[Tileset.STRING, 6, null],
+				[Tileset.STK, 10, null],
+				[Tileset.STN_PKX, 1, 100],
+				[Tileset.C_BENCH, 1, null]
+			]
 		}));
 		window.removeEventListener("click", addItems);
 	}
@@ -69,12 +65,11 @@ function init() {
 	function render(timestamp) {
 		//console.time("speed");
 		//Only if moving or clicking
-		if (character.isMoving || click.clicking || character.health <= 0) {
+		if (character.getHealth() <= 0) {
+			character.reset(100);
+		}
+		if (character.isMoving || click.clicking) {
 			//Clears screen
-			if (character.health <= 0) {
-				character.reset(100);
-			}
-			//Renders the world at the characters X/Y coords
 			click.renderCursor();
 		}
 		Canvas.ctx.clearRect(0, 0, Canvas.canvas.width, Canvas.canvas.height);

@@ -29,7 +29,7 @@ export class Inventory {
 
 		this.#clone.classList.add("inventoryItem");
 
-		
+
 		this.items = [];
 		for (let i = 0; i < 8; i++) {
 			//Creates an inventory box and adds it to the inventory bar
@@ -41,7 +41,7 @@ export class Inventory {
 		}
 
 		Crafting.addCraftingBench(new Crafting());
-		
+
 		Crafting.initCrafting();
 		Furnace.initFurnace();
 
@@ -101,7 +101,7 @@ export class Inventory {
 			return type;
 		}
 	}
-	addItem(blockType, callback) {
+	addItem(blockType, itemHealth, callback) {
 		let index = 0,
 			choose = 0;
 		for (let i = 0; i < 32; i++) {
@@ -128,7 +128,8 @@ export class Inventory {
 				}
 			}
 		}
-		InventoryItems.setInventoryItem(index, InventoryItems.items[index].amount, blockType, null, 0);
+
+		InventoryItems.setInventoryItem(index, InventoryItems.items[index].amount, blockType, itemHealth, 0);
 		let type = InventoryItems.items[index].type;
 		//Increment amount of block
 		InventoryItems.items[index].amount++;
@@ -142,7 +143,7 @@ export class Inventory {
 		//Sets the invitem to amount = 0, type = null
 		InventoryItems.addInventoryItem(0, Tileset.AIR, null);
 		//Creates inventoryItem from the template and adds it to the screen
-		
+
 		this.#clone.setAttribute("data-index", Inventory.#i);
 		document.getElementById(location).append(this.#clone.cloneNode(true));
 		Inventory.#i++;
@@ -163,37 +164,16 @@ export class Inventory {
 		return (a || b || c) && !(a && b && c);
 	}
 
-	// drop(e, target) {
-	// 	e.preventDefault();
-	// 	let invPos = parseInt(target.getAttribute("data-index"));
-	// 	let item = InventoryItems.items[invPos];
-	// 	let itemType = item.type;
-	// 	let blockType = _this.srcElement.getAttribute("data-type");
-	// 	if (itemType != null) {
-	// 		if (itemType.id == blockType) {
-	// 			if (item.amount < 64) {
-	// 				item.amount++;
-	// 				this.invBlocks[invPos].getElementsByTagName("span")[0].innerText = item.amount;
-	// 				this.invBlocks[invPos].setAttribute("data-amount", item.amount);
-	// 				this.toggleCharacterTorch();
-	// 			}
-	// 		}
-	// 	} else {
-	// 		if (item.amount < 64) {
-	// 			item.amount++;
-	// 			this.invBlocks[invPos].getElementsByTagName("span")[0].innerText = item.amount;
-	// 			this.invBlocks[invPos].setAttribute("data-amount", item.amount);
-	// 			this.toggleCharacterTorch();
-	// 		}
-	// 	}
-	// }
-
 	drop(e, target) {
 		e.preventDefault();
+		//Gets the index of the target inventory item
+		//the source inventory item
+		//Gets the current crafting bench
 		let tIndex = parseInt(target.getAttribute("data-index")),
 			sIndex = parseInt(this.srcElement.parentNode.getAttribute("data-index")),
 			cBench = Crafting.craftingBenches[Crafting.currentCraftingBench];
 
+		//Checks which type of inventory item the source item is being dragged to
 		let type = target.classList.contains("inventoryItem") ? 0
 			: ["craftingItem", "input"].every(e=>target.classList.contains(e)) ? 1
 			: ["furnaceItem", "input"].every(e=>target.classList.contains(e)) ? 2
@@ -201,6 +181,7 @@ export class Inventory {
 			: ["furnaceItem", "output"].every(e=>target.classList.contains(e)) ? 4
 			: null;
 
+		//Checks which type of inventory item the target item is being dragged to
 		let type2 = this.srcElement.parentNode.classList.contains("inventoryItem") ? 0
 			: this.srcElement.parentNode.classList.contains("craftingOutput") ? 3
 			: ["furnaceItem", "input"].every(e=>this.srcElement.parentNode.classList.contains(e)) ? 2
@@ -208,34 +189,39 @@ export class Inventory {
 			: ["furnaceItem", "output"].every(e=>this.srcElement.parentNode.classList.contains(e)) ? 4
 			: null;
 
-		console.log(type, type2);
-
+		//Gets the child element of the source and target inventory item
 		let tChild = target.querySelector(".inventoryBlock"),
 			sChild = this.srcElement;
 
 		let tAmount = 0,
 			sAmount = 0;
 
-		if(type == 3) {
+		//Prevents dragging on these target inventory item types
+		if(type === 3 || type === 4 || (type2 === 3 && type === 1) || (type2 === 4 && type === 2)) {
 			return;
 		}
-		
-		// check if the target (index) inventory slot is empty using getInvetoryItem
+
+		//Gets the target and source item
 		let tItem = InventoryItems.getInventoryItem(tIndex, type),
 			sItem = InventoryItems.getInventoryItem(sIndex, type2);
 
+		//Returns if the source type is air or the source type is the same as the target type 
 		if(sItem == tItem || sItem.type == Tileset.AIR) {
 			return;
 		}
 
+		//Gets the source and target item type
 		let tType = tItem.type,
 			sType = sItem.type;
 
 		let tBGPos,
 			sBGPos = sChild.style.backgroundPosition;
 
+		//Determines how many items are to be moved
 		let divide = Math.floor(sItem.amount/4) > 1 ? Math.floor(sItem.amount/4) : 1;
 
+		//If the target inventory item is empty
+		//move all items over
 		if(tItem.amount === 0) {
 			tAmount = this.#shiftPressed ? divide : sItem.amount;
 			sAmount = sItem.amount - tAmount;
@@ -245,6 +231,9 @@ export class Inventory {
 				sType = Tileset.AIR;
 			}
 		}else if(tItem.type != sItem.type) {
+			//If the target inventory item is not empty
+			//and the target item is not the same type as the source item
+			//swap the items
 			let temp = tType;
 			tType = sType;
 			sType = temp;
@@ -254,27 +243,30 @@ export class Inventory {
 		}else {
 			tAmount = this.#shiftPressed ? divide : sItem.amount;
 
+			//If the target item plus the new amount is less than or equal to the max amount
+			//move the required amount of items
 			if(tItem.amount+tAmount <= 64) {
 				sAmount = sItem.amount - tAmount;
 				tAmount = tItem.amount+tAmount;
-				console.log(tAmount, sAmount);
 			}else {
+				//Sets the target amount to the max amount#
+				//and decrements the source amount by the amount moved
 				tAmount = 64;
 				sAmount = (tItem.amount+sItem.amount)-64;
 			}
 
+			//If the source amount is 0
+			//set the source type to air
 			if(sAmount === 0) {
 				sType = Tileset.AIR;
 			}
 		}
 
-		console.log(sIndex, sAmount);
-
-		InventoryItems.setInventoryItem(tIndex, tAmount, tType, null, type);
-		InventoryItems.setInventoryItem(sIndex, sAmount, sType, null, type2);
-
-		console.log(InventoryItems.getInventoryItem(sIndex, type2));
+		//Sets the 2 inventory items to the new values
+		InventoryItems.setInventoryItem(tIndex, tAmount, tType, sItem.itemHealth, type);
+		InventoryItems.setInventoryItem(sIndex, sAmount, sType, tItem.itemHealth, type2);
 		
+		//Renders the 2 inventory items
 		tBGPos = "-" + (tType.x * 4) + "px -" + (tType.y * 4) + "px";
 		tChild.style.backgroundPosition = tBGPos;
 		tChild.querySelector("span").innerText = tAmount;
@@ -282,14 +274,16 @@ export class Inventory {
 		sBGPos = "-" + (sType.x * 4) + "px -" + (sType.y * 4) + "px";
 		sChild.style.backgroundPosition = sBGPos;
 		sChild.querySelector("span").innerText = sAmount > 0 ? sAmount : "";
-		
+
+		//If the target item is a crafting bench item
+		//checks the crafting recipes
 		if(type2 === 3) {
 			cBench.completeRecipe();
 			return;
 		}
-		
-		console.log(type);
 
+		//The same as above but for the furnace and moving items
+		//between crafting items
 		if(type === 1 || type2 === 1) {
 			cBench.checkRecipes();
 		}else if(type === 2 || type2 === 2) {
@@ -297,177 +291,7 @@ export class Inventory {
 		}
 	}
 
-	// drop(e, target) {
-	// 	let trgt = target.getElementsByClassName("inventoryBlock")[0],
-	// 		srcElm = _this.srcElement,
-	// 		pNodeC = srcElm.parentNode.classList,
-	// 		pNodeId = srcElm.parentNode.id;
-	// 	//If dragged blocks are same as dropzone blocks
-	// 	let item = InventoryItems.items[trgt.getAttribute("data-index")],
-	// 		srcItem = InventoryItems.items[srcElm.getAttribute("data-index")],
-	// 		isCraftingItem = ((pNodeC.contains("output") &&
-	// 			!trgt.parentNode.classList.contains("input")) ||
-	// 			this.srcElement.parentNode.classList.contains("input")) &&
-	// 			item.amount < 64 && (item.type == undefined ||
-	// 				item.type?.id == srcItem.type.id);
-	// 	/*isCraftingInput = (pNodeC.contains("input") &&
-	// 						!trgt.parentNode.classList.contains("input") &&
-	// 						item.amount < 64 && (item.type == undefined ||
-	// 						item.type?.id == srcItem.type.id));*/
-	// 	if (isCraftingItem || (!pNodeC.contains("output")
-	// 		&& trgt.parentNode.classList.contains("inventoryItem")
-	// 		&& !trgt.parentNode.classList.contains("output"))) {
-	// 		if (trgt.style.backgroundPosition == srcElm.style.backgroundPosition && trgt != srcElm) {
-	// 			let amount = parseInt(trgt.getAttribute("data-amount")) +
-	// 				parseInt(srcElm.getAttribute("data-amount")),
-	// 				srcAmnt = 0;
-	// 			//< 64 blocks
-	// 			if (amount <= 64) {
-	// 				//Remove dragged item and icrement dropzone value to amount
-	// 				if (_this.#shiftPressed) {
-	// 					amount = parseInt(trgt.getAttribute("data-amount")) + 1;
-	// 					srcAmnt = parseInt(srcElm.getAttribute("data-amount")) - 1;
-	// 				}
-	// 				trgt.setAttribute("data-amount", amount);
-	// 				target.querySelector("span").innerText = amount;
-	// 				srcElm.setAttribute("data-amount", srcAmnt);
-	// 				srcElm.querySelector("span").innerText = srcAmnt;
-	// 				if (srcAmnt == 0) {
-	// 					srcElm.style.backgroundPosition = "";
-	// 					srcElm.classList.add("hide");
-	// 					InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), 0, null);
-	// 				} else {
-	// 					InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), parseInt(srcElm.getAttribute("data-amount")), InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))].type);
-	// 				}
-
-	// 				InventoryItems.setInventoryItem(parseInt(trgt.getAttribute("data-index")), amount, InventoryItems.items[parseInt(trgt.getAttribute("data-index"))].type);
-	// 				//this.InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))] = {amount:0,type:null};
-	// 				//this.InventoryItems.items[parseInt(trgt.getAttribute("data-index"))].amount = amount;
-	// 			} else {
-	// 				//If amount is more than 64, switch blocks
-	// 				let val = target.getElementsByClassName("inventoryBlock")[0].getAttribute("data-amount"),
-	// 					trgtVal = parseInt(srcElm.getAttribute("data-amount"));
-
-	// 				trgt.setAttribute("data-amount", trgtVal);
-	// 				target.querySelector("span").innerText = trgtVal;
-	// 				InventoryItems.setInventoryItem(parseInt(trgt.getAttribute("data-index")), trgtVal, InventoryItems.items[parseInt(trgt.getAttribute("data-index"))].type);
-	// 				//this.InventoryItems.items[parseInt(trgt.getAttribute("data-index"))].amount = trgtVal;
-	// 				srcElm.setAttribute("data-amount", val);
-	// 				srcElm.querySelector("span").innerText = val;
-	// 				InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), val, InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))].type);
-	// 				//this.InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))].amount = val;
-	// 			}
-	// 			//this.srcElement
-	// 		} else if (trgt.style.backgroundPosition == "0px 0px" || trgt.style.backgroundPosition == "") {
-	// 			//If no blocks at dropzone,remove draggable blocks and add to dropzone
-	// 			let amount = parseInt(srcElm.getAttribute("data-amount")),
-	// 				srcType = InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))].type;
-	// 			trgt.getElementsByClassName("itemHealth")[0].style.width = 0;
-	// 			trgt.classList.remove("hide");
-	// 			trgt.style.backgroundPosition = srcElm.style.backgroundPosition;
-	// 			let item = InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))],
-	// 				itemHealth = item.itemHealth != null ? item.itemHealth : null;
-	// 			trgt.querySelector(".itemHealth").style.width = itemHealth + "%";
-	// 			if (_this.#shiftPressed) {
-	// 				trgt.setAttribute("data-amount", 1);
-	// 				target.querySelector("span").innerText = 1;
-	// 				srcElm.setAttribute("data-amount", amount - 1);
-	// 				srcElm.querySelector("span").innerText = amount - 1;
-	// 				if (amount - 1 == 0) {
-	// 					srcElm.style.backgroundPosition = "";
-	// 					srcElm.classList.add("hide");
-	// 					srcElm.querySelector(".itemHealth").style.width = 0;
-	// 					InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), 0, null, null);
-	// 				} else {
-	// 					InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), 0, srcType);
-	// 				}
-	// 				InventoryItems.setInventoryItem(parseInt(trgt.getAttribute("data-index")), amount, srcType, itemHealth, itemHealth);
-	// 			} else {
-	// 				trgt.setAttribute("data-amount", amount);
-	// 				target.querySelector("span").innerText = amount;
-	// 				srcElm.setAttribute("data-amount", 0);
-	// 				srcElm.querySelector("span").innerText = 0;
-	// 				srcElm.style.backgroundPosition = "";
-	// 				srcElm.classList.add("hide");
-	// 				srcElm.querySelector(".itemHealth").style.width = 0;
-
-	// 				if(trgt.parentNode.classList.contains("craftingItem")) {
-	// 					console.log(trgt.getAttribute("data-index"), Crafting.currentCraftingBench)
-	// 					Crafting.craftingBenches[Crafting.currentCraftingBench].setCraftingItem(parseInt(trgt.getAttribute("data-index")), amount, srcType, itemHealth);
-	// 					console.log(Crafting.craftingBenches[Crafting.currentCraftingBench])
-	// 				} else {
-	// 					InventoryItems.setInventoryItem(parseInt(trgt.getAttribute("data-index")), amount, srcType, itemHealth);
-	// 				}
-	// 				InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), 0, null, null);
-	// 			}
-	// 			//this.InventoryItems.items[parseInt(trgt.getAttribute("data-index"))] = {amount:amount,type:srcType};
-	// 			//this.InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))] = {amount:0,type:null};
-	// 		} else {
-	// 			//Switch blocks around if different
-	// 			console.log("test3");
-	// 			let val = trgt.getAttribute("data-amount"),
-	// 				trgtAmount = parseInt(srcElm.getAttribute("data-amount")),
-	// 				bgPos = trgt.style.backgroundPosition,
-	// 				srcType = InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))].type,
-	// 				targetType = InventoryItems.items[parseInt(trgt.getAttribute("data-index"))].type,
-	// 				item = InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))],
-	// 				itemHealth = item.itemHealth != null ? item.itemHealth : null,
-	// 				item2 = InventoryItems.items[parseInt(trgt.getAttribute("data-index"))],
-	// 				item2Health = item2.itemHealth != null ? item2.itemHealth : null;
-
-	// 			console.log(itemHealth, item2Health);
-
-	// 			trgt.setAttribute("data-amount", trgtAmount);
-	// 			trgt.style.backgroundPosition = srcElm.style.backgroundPosition;
-	// 			target.querySelector("span").innerText = trgtAmount;
-	// 			srcElm.setAttribute("data-amount", val);
-	// 			srcElm.querySelector("span").innerText = val;
-	// 			srcElm.style.backgroundPosition = bgPos;
-	// 			InventoryItems.setInventoryItem(parseInt(srcElm.getAttribute("data-index")), val, targetType, item2Health);
-	// 			InventoryItems.setInventoryItem(parseInt(trgt.getAttribute("data-index")), trgtAmount, srcType, itemHealth);
-	// 			itemHealth = itemHealth == null ? 0 : itemHealth;
-	// 			item2Health = item2Health == null ? 0 : item2Health;
-	// 			trgt.querySelector(".itemHealth").style.width = itemHealth + "%";
-	// 			srcElm.querySelector(".itemHealth").style.width = item2Health + "%";
-	// 			//this.InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))] = {amount:val,type:targetType};
-	// 			//this.InventoryItems.items[parseInt(trgt.getAttribute("data-index"))] = {amount:trgtAmount,type:srcType};
-	// 		}
-	// 		//If box that was dragged from was crafting output complete crafting recipe
-	// 		if (pNodeC.contains("craftingOutput") &&
-	// 			!trgt.parentNode.classList.contains("craftingOutput") &&
-	// 			!trgt.parentNode.classList.contains("craftingItem")) {
-	// 			this.#crafting.completeCrafting();
-	// 			Crafting.checkRecipes();
-	// 		} else if ((trgt.parentNode.classList.contains("craftingItem") &&
-	// 			!trgt.parentNode.classList.contains("craftingOutput") &&
-	// 			!pNodeC.contains("craftingOutput"))) {
-	// 			//If box that was dragged to was crafting box, check if crafting recipe was correct
-	// 			Crafting.checkRecipes();
-	// 		} else if (pNodeC.contains("craftingItem") && !trgt.parentNode.classList.contains("input")) {
-	// 			Crafting.checkRecipes();
-	// 		} else if (trgt.parentNode.classList.contains("input") &&
-	// 			!trgt.parentNode.classList.contains("furnaceOutput") &&
-	// 			!pNodeC.contains("furnaceOutput")) {
-	// 			//If box that was dragged to was crafting box, check if crafting recipe was correct
-	// 			Crafting.checkRecipes();
-	// 		} else if ((pNodeC.contains("furnaceItem") || pNodeC.contains("furnaceFuel")) && !trgt.parentNode.classList.contains("input")) {
-	// 			this.#furnace.cancelSmelting();
-	// 		}
-	// 		if (InventoryItems.items[parseInt(srcElm.getAttribute("data-index"))].itemHealth == null) {
-	// 			srcElm.querySelector(".itemHealthWrapper").classList.add("hide");
-	// 		} else {
-	// 			srcElm.querySelector(".itemHealthWrapper").classList.remove("hide");
-	// 		}
-	// 		if (InventoryItems.items[parseInt(trgt.getAttribute("data-index"))].itemHealth == null) {
-	// 			trgt.querySelector(".itemHealthWrapper").classList.add("hide");
-	// 		} else {
-	// 			trgt.querySelector(".itemHealthWrapper").classList.remove("hide");
-	// 		}
-	// 	}
-	// 	_this.toggleCharacterTorch();
-	// 	//this.append(this.srcElement)
-	// }
-
+	//Toggles the characters torch
 	toggleCharacterTorch() {
 		let isTorch = (InventoryItems.items[this.#invPos].type != null && InventoryItems.items[this.#invPos].type.id == "torch");
 		window.dispatchEvent(new CustomEvent("showCharacterTorch", { detail: isTorch }));
@@ -562,17 +386,21 @@ export class Inventory {
 		window.addEventListener("damageItem", function (e) {
 			let index = parseInt(document.querySelector(".selected").getAttribute("data-index"));
 			let selected = document.querySelector(".selected .inventoryBlock");
+			
 			//Decement item health by 2 units
 			InventoryItems.setItemHealth(index, 2);
-			selected.querySelector(".itemHealth").style.width = InventoryItems.items[index].itemHealth + "%";
-			//If item health is <= 0, remove the item
+
+			selected.querySelector(".itemHealthWrapper").classList.remove("hide");
+			selected.querySelector(".itemHealth").value = InventoryItems.items[index].itemHealth;
 			if (InventoryItems.items[index].itemHealth <= 0) {
+				//If item health is <= 0, remove the item
+				selected.querySelector(".itemHealthWrapper").classList.add("hide");
 				_this.removeItem();
 			}
 		});
 
 		window.addEventListener("addInventoryItem", function (e) {
-			_this.addItem(e.detail, function (hasSpace) {
+			_this.addItem(e.detail, 0, function (hasSpace) {
 				if (hasSpace) {
 					//Remvoe block from world if space in inventory
 					_this.toggleCharacterTorch();
@@ -583,12 +411,11 @@ export class Inventory {
 			});
 		});
 
-		window.addEventListener("addNewItem", function (e) {
-			for (let [key, value] of Object.entries(Tileset)) {
-				if (value.id == e.detail[0]) {
-					for (let i = 0; i < e.detail[1]; i++) {
-						_this.addItem(value, function (hasSpace) { });
-					}
+		//Adds new items to the inventory via the developer shortcut thingy
+		window.addEventListener("addNewItems", function (e) {
+			for (let i = 0; i < e.detail.length; i++) {
+				for (let j = 0; j < e.detail[i][1]; j++) {
+					_this.addItem(e.detail[i][0], e.detail[i][2], function (hasSpace) { });
 				}
 			}
 		});

@@ -96,7 +96,6 @@ export class BlockPlacement {
 							setTimeout(function () {
 								//set current crafting bench = to the crafting bench at the xy
 								Crafting.currentCraftingBench = Earth.world[Y][X].craftingBench;
-								console.log(Crafting.currentCraftingBench);
 								window.dispatchEvent(new CustomEvent("openCrafting"));
 							}, 200);
 							break;

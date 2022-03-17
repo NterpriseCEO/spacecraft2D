@@ -41,7 +41,6 @@ export class RenderWorld {
 		//Renders those chunks
 		for (let y = 0; y < this.#chunksY; y++) {
 			for (let x = 0; x < this.#chunksX; x++) {
-				//console.log("test");
 				this.#chunks.updateChunk(x * 10, y * 10);
 				this.#chunks.updateShadow(x * 10, y * 10);
 			}
