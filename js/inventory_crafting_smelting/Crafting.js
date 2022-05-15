@@ -1,4 +1,4 @@
-import { craftingRecipes } from "./craftingRecipes.js";
+import { craftingRecipes } from "./CraftingRecipes.js";
 import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
 
 export class Crafting {
