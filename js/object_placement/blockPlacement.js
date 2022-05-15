@@ -32,6 +32,10 @@ export class BlockPlacement {
 		this.#lastPlacedBlock = lastPlacedBlock;
 	}
 
+	XOR(a, b) {
+		return (a || b) && !(a && b);
+	}
+
 	addBlock(x, y, camX, camY, startX, startY) {
 		//Get position of the block
 		let minus = Camera.startX - (Math.floor((window.innerWidth / 2) / Planet.size) * Planet.size),
@@ -46,31 +50,55 @@ export class BlockPlacement {
 			X = 1000 + X;
 		}
 
+		/*
+			1 1 0 0
+			1 0 1 0
+			1 1 1 1
+		*/
+
 		//Checks if the current block is air
 		if ((this.#lastPlacedBlock[0] != X || this.#lastPlacedBlock[1] != Y)) {
 			this.#lastPlacedBlock = [X, Y];
 			if (((Math.floor(camX / Planet.size) != X || Math.floor(camY / Planet.size) - 1 != Y) && (Math.floor(camX / Planet.size) != X || Math.floor(camY / Planet.size) - 2 != Y))) {
-				if (Earth.world[Y][X].id == "air") {
+				if (Earth.world[Y][X].id == "air" || Earth.world[Y][X].id == "water" || Earth.world[Y][X].id == "lava") {
 					//Cheks if inventory has block
 					if (this.#inventory.hasItem()) {
 						//Checks if tree is at xy
 						if ((Earth.trees[Y] == undefined || Earth.trees[Y][X] == undefined) && this.#inventory.getItem().canPlace == null) {
+														
+							if(this.#inventory.getItem().id == 'door_inventory' && Earth.world[Y+1][X].id != 'air' && Earth.world[Y-1][X].id != 'air') {
+								return;
+							}
+							
 							tile = this.#inventory.removeItem();
 							tile = tile == null ? Tileset.AIR : tile;
+
+							const xx = Math.floor(X / 10) * 10,
+								yy = Math.floor(Y / 10) * 10;
+
+							if(Earth.world[Y+1][X] == Tileset.AIR && tile == Tileset.DOOR_INVENTORY) {
+								tile = Tileset.DOOR_TOP_CLOSED;
+								Earth.world[Y+1][X] = Tileset.DOOR_BOTTOM_CLOSED;
+								this.#chunks.updateChunk(xx, yy+10);
+							}else if(Earth.world[Y-1][X] == Tileset.AIR && tile == Tileset.DOOR_INVENTORY) {
+								tile = Tileset.DOOR_BOTTOM_CLOSED;
+								Earth.world[Y-1][X] = Tileset.DOOR_TOP_CLOSED;
+								this.#chunks.updateChunk(xx, yy-10);
+							}
+
 							Earth.world[Y][X] = JSON.parse(JSON.stringify(tile));
 							//Checks if block y+1 = grass, set block to soil if true
 							if (Earth.world[Y + 1][X].id == "grass" || Earth.world[Y + 1][X].id == "grass1" || Earth.world[Y + 1][X].id == "grass2") {
-								Earth.world[Y + 1][X] = Tileset.S;
+								Earth.world[Y + 1][X] = Tileset.SOIL;
 							}
-							let xx = Math.floor(X / 10) * 10,
-								yy = Math.floor(Y / 10) * 10;
+
 							if (Earth.world[Y][X].id == "torch") {
 								window.dispatchEvent(new CustomEvent("lightAdded", { detail: [X, Y] }));
 							}else if (Earth.world[Y][X].id == "crafting_bench") {
 								Crafting.addCraftingBench(new Crafting());
 								Earth.world[Y][X].craftingBench = Crafting.craftingBenches.length - 1;;
 							}else if (Earth.world[Y][X].id == "furnace") {
-								Furnace.addFurnace(new Furnace());
+								Furnace.addFurnace(new Furnace(X, Y));
 								Earth.world[Y][X].furnace = Furnace.furnaces.length - 1;
 							}
 							//Update the chunks to the left/right/top/bottom of current chunk
@@ -92,19 +120,36 @@ export class BlockPlacement {
 					try {
 						//If crafting bench, open crafting bench
 						switch (Earth.world[Y][X].id) {
-						case "crafting_bench":
-							setTimeout(function () {
-								//set current crafting bench = to the crafting bench at the xy
-								Crafting.currentCraftingBench = Earth.world[Y][X].craftingBench;
-								window.dispatchEvent(new CustomEvent("openCrafting"));
-							}, 200);
-							break;
-						case "furnace":
-							setTimeout(function () {
-								Furnace.currentFurnace = Earth.world[Y][X].furnace;
-								window.dispatchEvent(new CustomEvent("openFurnace", { detail: [X, Y] }));
-							}, 200);
-							break;
+							case "crafting_bench":
+								setTimeout(function () {
+									//set current crafting bench = to the crafting bench at the xy
+									Crafting.currentCraftingBench = Earth.world[Y][X].craftingBench;
+									window.dispatchEvent(new CustomEvent("openCrafting"));
+								}, 200);
+								break;
+							case "furnace":
+							case "hot_furnace":
+								setTimeout(function () {
+									Furnace.currentFurnace = Earth.world[Y][X].furnace;
+									window.dispatchEvent(new CustomEvent("openFurnace", { detail: [X, Y] }));
+								}, 200);
+								break;
+							case "door_top": case "door_top_closed":
+								Earth.world[Y][X] =  Earth.world[Y][X] == Tileset.DOOR_TOP_OPEN ? Tileset.DOOR_TOP_CLOSED : Tileset.DOOR_TOP_OPEN;
+								Earth.world[Y+1][X] =  Earth.world[Y+1][X] == Tileset.DOOR_BOTTOM_OPEN ? Tileset.DOOR_BOTTOM_CLOSED : Tileset.DOOR_BOTTOM_OPEN;
+								var xx = Math.floor(X / 10) * 10,
+									yy = Math.floor(Y / 10) * 10;
+								this.#chunks.updateChunk(xx, yy);
+								this.#chunks.updateChunk(xx, yy+10);
+								break;
+							case "door_bottom": case "door_bottom_closed":
+								Earth.world[Y][X] =  Earth.world[Y][X] == Tileset.DOOR_BOTTOM_OPEN ? Tileset.DOOR_BOTTOM_CLOSED : Tileset.DOOR_BOTTOM_OPEN;
+								Earth.world[Y-1][X] =  Earth.world[Y-1][X] == Tileset.DOOR_TOP_OPEN ? Tileset.DOOR_TOP_CLOSED : Tileset.DOOR_TOP_OPEN;
+								var xx = Math.floor(X / 10) * 10,
+									yy = Math.floor(Y / 10) * 10;
+								this.#chunks.updateChunk(xx, yy);
+								this.#chunks.updateChunk(xx, yy-10);
+								break;
 						}
 					} catch (e) {
 						console.log(e);
@@ -128,7 +173,7 @@ export class BlockPlacement {
 		let toAdd = Earth.world[Y][X];
 		//Set toAdd to soild if mining grass of any type
 		if (Earth.world[Y][X].id == "grass" || Earth.world[Y][X].id == "grass1" || Earth.world[Y][X].id == "grass2") {
-			toAdd = Tileset.S;
+			toAdd = Tileset.SOIL;
 			//toAdd = Tileset.FRNC;
 		}
 		let _this = this;
@@ -137,7 +182,8 @@ export class BlockPlacement {
 			this.stopMining();
 			this.#lastBlock = [X, Y];
 		}
-		if (Earth.world[Y][X].id != "air") {
+		
+		if (Earth.world[Y][X] != Tileset.AIR && Earth.world[Y][X] != Tileset.WATER && Earth.world[Y][X] != Tileset.LAVA) {
 			if (!BlockPlacement.mining) {
 				//If not mining
 				BlockPlacement.mining = true;
@@ -165,12 +211,26 @@ export class BlockPlacement {
 				BlockPlacement.miningTimer = setTimeout(function () {
 					//When done mining
 					//Remove block
-					Earth.addDropItem(X, Y, toAdd);
+					if(JSON.stringify(toAdd) != JSON.stringify(Tileset.DOOR_BOTTOM_CLOSED) &&
+						JSON.stringify(toAdd) != JSON.stringify(Tileset.DOOR_TOP_CLOSED)
+						&& JSON.stringify(toAdd) != JSON.stringify(Tileset.DOOR_BOTTOM_OPEN) &&
+						JSON.stringify(toAdd) != JSON.stringify(Tileset.DOOR_TOP_OPEN)) {
+						Earth.addDropItem(X, Y, toAdd);
+					}else {
+						Earth.addDropItem(X, Y, Tileset.DOOR_INVENTORY);
+						if(Earth.world[Y-1][X] == Tileset.DOOR_TOP_CLOSED || Earth.world[Y-1][X] == Tileset.DOOR_TOP_OPEN) {
+							Earth.world[Y-1][X] = Tileset.AIR;
+						}else {
+							Earth.world[Y+1][X] = Tileset.AIR;
+						}
+					}
 					if (miningIncrease == 1) {
 						_this.#character.damage(Earth.world[Y][X].damage);
 					} else {
 						window.dispatchEvent(new CustomEvent("damageItem"));
 					}
+
+					let id = Earth.world[Y][X].furnace || Earth.world[Y][X].craftingBench;
 
 					Earth.world[Y][X] = Tileset.AIR;
 					BlockPlacement.mining = false;
@@ -181,6 +241,32 @@ export class BlockPlacement {
 					if (toAdd.id == "torch") {
 						window.dispatchEvent(new CustomEvent("lightRemoved", { detail: [X, Y] }));
 					}
+					
+					//Flood fills the chunk with water or lava
+					try {
+						Earth.flood(X, Y, Tileset.WATER);
+					}catch(e) {
+						console.log(e);
+					}
+					try {
+						Earth.flood(X, Y, Tileset.LAVA);
+					}catch(e) {
+						console.log(e);
+					}
+
+					//Adds all items to inventory if furnace or crafting bench was mined
+					if(toAdd.id == "furnace" || toAdd.id == "hot_furnace") {
+						const items = Furnace.furnaces[id].getFurnaceItems();
+						items.forEach(item => {
+							Earth.addDropItem(X, Y, item);
+						});
+					}else if(toAdd.id == "crafting_bench") {
+						const items = Crafting.craftingBenches[id].getCraftingItems();
+						items.forEach(item => {
+							Earth.addDropItem(X, Y, item);
+						});
+					}
+
 
 					//Update the chunks to the left/right/top/bottom of   current chunk
 					Earth.updateShadowMap(xx - 10, yy, Tileset);
@@ -233,14 +319,12 @@ export class BlockPlacement {
 							//Adds 2 logs and  leaf blocks
 							if (Earth.trees[Y][X][2] == "tree") {
 								for (let i = 0; i < 4; i++) {
-									//_this.#inventory.addItem(Tileset.LEA);
-									//_this.#inventory.addItem(Tileset.LOG);
-									Earth.addDropItem(X, Y, Tileset.LEA);
+									Earth.addDropItem(X, Y, Tileset.LEAVES);
 									Earth.addDropItem(X, Y, Tileset.LOG);
 								}
 							} else {
 								for (let i = 0; i < 2; i++) {
-									Earth.addDropItem(X, Y, Tileset.C_LEAVE);
+									Earth.addDropItem(X, Y, Tileset.CACTUS_LEAVES);
 								}
 							}
 							//Remove the tree

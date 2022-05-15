@@ -9,7 +9,6 @@ export class Earth extends Planet {
 	static dropItems = [];
 
 	static nextValue = 0;
-	static joinValue = 165;
 
 	constructor() {
 		super();
@@ -26,10 +25,7 @@ export class Earth extends Planet {
 				//let value = Math.round(Math.abs((noise.perlin2(x/40,y/40,new Date().getTime())*300))/8)+170;
 				let value = Math.round(Math.abs((noise.perlin2(noise.perlin2(x / 40, y / 40), noise.simplex2(x / 50, y / 50)) * 300)) / 8);
 
-				Earth.world[value + Earth.joinValue][x] = Tileset.R;
-				if (x == Earth.nextValue + 249) {
-					Earth.joinValue = value + Earth.joinValue;
-				}
+				Earth.world[value+165][x] = Tileset.ROCK;
 			}
 		}
 		Earth.nextValue += 250;
@@ -42,10 +38,7 @@ export class Earth extends Planet {
 				// All noise functions return values in the range of -1 to 1.
 				// noise.simplex2 and noise.perlin2 for 2d noise
 				let value = Math.round((Math.abs(noise.perlin2(x / 40, Earth.nextValue / 40) * 10)));
-				Earth.world[value + Earth.joinValue][x] = Tileset.SA;
-				if (x == Earth.nextValue + 249) {
-					Earth.joinValue = value + Earth.joinValue;
-				}
+				Earth.world[value + 165][x] = Tileset.SAND;
 			}
 		}
 		Earth.nextValue += 250;
@@ -57,15 +50,40 @@ export class Earth extends Planet {
 			for (let x = Earth.nextValue; x < Earth.nextValue + 250; x++) {
 				// All noise functions return values in the range of -1 to 1.
 				// noise.simplex2 and noise.perlin2 for 2d noise
-				let value = noise.simplex2(x / 100, y / 100);
+				let value = noise.simplex2(x / 75, y / 100);
+				let value2 = noise.simplex2(x / 100, y / 75);
+				let value3 = noise.simplex2(value, value2);
 				// ... or noise.simplex3 and noise.perlin3:
 				//Add grass and rock
-				let Y = Math.abs(Math.round(value * 10)) + Earth.joinValue;
-				Earth.world[Y][x] = Tileset.G;
-				Earth.world[Y + Earth.joinValue + 30][x] = Tileset.R;
-				if (x == Earth.nextValue + 249) {
-					Earth.joinValue = Y;
+				let Y = Math.abs(Math.round(value3 * 10));
+				let Y2 = Math.floor(Math.random() * 1) - 1
+				Earth.world[Y+165][x] = Tileset.GRASS;
+				Earth.world[Y + 170 + Y2][x] = Tileset.ROCK;
+			}
+		}
+		for(let y = 160; y < 500; y++) {
+			for(let x = Earth.nextValue; x < Earth.nextValue+250; x++) {
+				//Add soil under grass
+				if ((Earth.world[y - 1][x].id == "grass" || Earth.world[y - 1][x].id == "grass1" || Earth.world[y - 1][x].id == "grass2" || Earth.world[y - 1][x].id == "soil") && Earth.world[y][x].id == "air") {
+					Earth.world[y][x] = Tileset.SOIL;
 				}
+				if(y > 168) {
+					//If y is more than 168 and block y / y-1 == air, add water axt XY
+					if (Earth.world[y][x].id == "air" && (Earth.world[y - 1][x].id == "air" || Earth.world[y - 1][x].id == "water")) {
+						Earth.world[y][x] = Tileset.WATER;
+					}
+				}
+			}
+		}
+		//Adds lakes to the forest
+		for(let y = 100; y < 500; y++) {
+			if(Earth.world[y][Earth.nextValue] == Tileset.WATER) {
+				Earth.world[y][Earth.nextValue] =
+				Earth.world[y-1][Earth.nextValue] == Tileset.AIR ? Tileset.GRASS : Tileset.SOIL;
+			}
+			if(Earth.world[y][Earth.nextValue+249] == Tileset.WATER) {
+				Earth.world[y][Earth.nextValue+249] =
+				Earth.world[y-1][Earth.nextValue+249] == Tileset.AIR ? Tileset.GRASS : Tileset.SOIL;
 			}
 		}
 		Earth.nextValue += 250;
@@ -97,6 +115,56 @@ export class Earth extends Planet {
 		}
 	}
 
+	//Flood fills a chunk downards and outwards with water or lava
+	static flood(x, y, type) {
+		if(Earth.world[y][x+1] == type
+			|| Earth.world[y][x-1] == type
+			|| Earth.world[y-1][x] == type) {
+			Earth.world[y][x] = type;
+			if(Earth.world[y][x+1] == Tileset.AIR) {
+				Earth.floodHorizontal(x+1, y, 1, type);
+			}
+			if(Earth.world[y][x-1] == Tileset.AIR) {
+				Earth.floodHorizontal(x-1, y, -1, type);
+			}
+			if(Earth.world[y+1][x] == Tileset.AIR) {
+				Earth.floodDown(x, y+1, type);
+			}
+		}
+	}
+
+	static floodHorizontal(x, y, dir, type) {
+		Earth.world[y][x] = type;
+		if(Earth.world[y][x+dir] == Tileset.AIR) {
+			Earth.floodHorizontal(x+dir, y, dir, type);
+		}
+		if(Earth.world[y+1][x] == Tileset.AIR) {
+			Earth.floodDown(x, y+1, type);
+		}
+
+		//Updates the chunk if the next block is not air or if at the end of the chunk
+		if(Earth.world[y][x+dir] != Tileset.AIR || Earth.world[y+1][x] != Tileset.AIR ||
+			x%10 == 0 || y%10 == 0) {
+			window.dispatchEvent(new CustomEvent("updateChunk", {
+				detail: [Math.floor(x / 10) * 10, Math.floor(y / 10) * 10]
+			}));
+		}
+	}
+
+	static floodDown(x, y, type) {
+		Earth.world[y][x] = type;
+		if(Earth.world[y+1][x] == Tileset.AIR) {
+			Earth.floodDown(x, y+1, type);
+		}
+
+		//Updates the chunk if the next block is not air or if at the end of the chunk
+		if(Earth.world[y+1][x] != Tileset.AIR || y%10 == 0) {
+			window.dispatchEvent(new CustomEvent("updateChunk", {
+				detail: [Math.floor(x / 10) * 10, Math.floor(y / 10) * 10]
+			}));
+		}
+	}
+
 	createWorld() {
 		let biomesList = document.getElementById("biomes");
 		//Generate y row and shadow map y row
@@ -104,22 +172,7 @@ export class Earth extends Planet {
 			Earth.world[y] = [];
 			Earth.shadowMap[y] = [];
 		}
-	
-		Earth.#forest();
-		for (let i = 0; i < 3; i++) {
-			let rand = random(3);
-			if (rand == 1) {
-				Earth.#mountain();
-				biomesList.innerHTML += "Mountain<br>";
-			} else if (rand == 2) {
-				Earth.#desert();
-				biomesList.innerHTML += "Desert<br>";
-			} else {
-				Earth.#forest();
-				biomesList.innerHTML += "Forest<br>";
-			}
-		}
-	
+
 		for (let y = 0; y < 1000; y++) {
 			for (let x = 0; x < 1000; x++) {
 				//Set xy (and +1/+2) to air if xy (+1/+2) is undefined
@@ -132,46 +185,81 @@ export class Earth extends Planet {
 				if (Earth.world[y][x + 2] == undefined) {
 					Earth.world[y][x + 2] = Tileset.AIR;
 				}
+			}
+		}
+
+		const biomes = ["forest", "desert", "mountain"];
+		Earth.#forest();
+		
+		//Loops through all biomes and chooses a random biome until all biomes are loaded
+		while(biomes.length > 0) {
+			let rand = random(biomes.length);
+			switch(biomes[rand-1]) {
+				case "mountain":
+					Earth.#mountain();
+					biomesList.innerHTML += "Mountain<br>";
+					break;
+				case "desert":
+					Earth.#desert();
+					biomesList.innerHTML += "Desert<br>";
+					break;
+				case "forest":
+					Earth.#forest();
+					biomesList.innerHTML += "Forest<br>";
+					break;
+			}
+			biomes.splice(rand-1, 1);
+		}
+
+		// for (let i = 0; i < 3; i++) {
+		// 	let rand = random(3);
+		// 	if (rand == 1) {
+		// 		Earth.#mountain();
+		// 		biomesList.innerHTML += "Mountain<br>";
+		// 	} else if (rand == 2) {
+		// 		Earth.#desert();
+		// 		biomesList.innerHTML += "Desert<br>";
+		// 	} else {
+		// 		Earth.#forest();
+		// 		biomesList.innerHTML += "Forest<br>";
+		// 	}
+		// }
 	
+		for (let y = 0; y < 1000; y++) {
+			for (let x = 0; x < 1000; x++) {
 				if (Earth.world[y - 1] != undefined) {
 					//Check if xy-1 is rock/ore and randomly choose which ore to render
 					if (Earth.world[y - 1][x].id == "rock" || Earth.world[y - 1][x].id == "iron" || Earth.world[y - 1][x].id == "gold" || Earth.world[y - 1][x].id == "diamond" || Earth.world[y - 1][x].id == "coal") {
 						if (random(10) == 1) {
 							Earth.world[y][x] = Tileset.COAL;
+							this.clumpOres(Tileset.COAL, y, x);
 						} else if (random(20) == 1) {
-							Earth.world[y][x] = Tileset.IR;
+							Earth.world[y][x] = Tileset.IRON;
+							this.clumpOres(Tileset.IRON, y, x);
 						} else if (random(30) == 1) {
-							Earth.world[y][x] = Tileset.GLD;
-						} else if (random(40) == 1) {
-							Earth.world[y][x] = Tileset.DMND;
+							Earth.world[y][x] = Tileset.GOLD;
+							this.clumpOres(Tileset.GOLD, y, x);
+						} else if (random(40) == 1 && y > 200) {
+							Earth.world[y][x] = Tileset.DIAMOND;
+							this.clumpOres(Tileset.DIAMOND, y, x);
 						} else {
-							Earth.world[y][x] = Tileset.R;
+							Earth.world[y][x] = Tileset.ROCK;
 						}
 					}
 					if (Earth.world[y - 5] != undefined) {
 						if (Earth.world[y - 1][x].id == "sand" && Earth.world[y - 5][x].id != "sand") {
-							Earth.world[y][x] = Tileset.SA;
+							Earth.world[y][x] = Tileset.SAND;
 						}
 					}
 					//Add sand underneath sand
 					if (Earth.world[y - 1][x].id == "sand") {
-						Earth.world[y][x] = Tileset.SA;
-					}
-					//Add soil under grass
-					if ((Earth.world[y - 1][x].id == "grass" || Earth.world[y - 1][x].id == "grass1" || Earth.world[y - 1][x].id == "grass2" || Earth.world[y - 1][x].id == "soil") && Earth.world[y][x].id == "air") {
-						Earth.world[y][x] = Tileset.S;
-					}
-					if (y > 168) {
-						//If y is more than 168 and block y / y-1 == air, add water axt XY
-						if (Earth.world[y][x].id == "air" && (Earth.world[y - 1][x].id == "air" || Earth.world[y - 1][x].id == "water")) {
-							Earth.world[y][x] = Tileset.WATER;
-						}
+						Earth.world[y][x] = Tileset.SAND;
 					}
 				}
 				//Add left corner grass if block is air and block to right is soil
 				if (Earth.world[y][x - 1] != undefined) {
 					if (Earth.world[y][x].id == "grass" && Earth.world[y][x - 1].id == "air") {
-						Earth.world[y][x] = Tileset.G1;
+						Earth.world[y][x] = Tileset.GRASS1;
 					}
 				}
 	
@@ -179,21 +267,24 @@ export class Earth extends Planet {
 				if (Earth.world[y][x + 1] != undefined) {
 					if (Earth.world[y - 1] != undefined) {
 						if (Earth.world[y][x].id == "grass" && Earth.world[y][x + 1].id == "air" && (Earth.world[y - 1][x + 1].id == "air")) {
-							Earth.world[y][x] = Tileset.G2;
+							Earth.world[y][x] = Tileset.GRASS2;
 						}
 					}
 				}
 				let randRocks = random(5);
-				if (randRocks == 5 && (Earth.world[y][x].id == "grass" || Earth.world[y][x].id == "grass1" || Earth.world[y][x].id == "grass2") && Earth.world[y - 1][x].id == "air") {
-					Earth.world[y - 1][x] = Tileset.BLDR;
+				if (randRocks == 5 && (
+					Earth.world[y][x].id == "grass" ||
+					Earth.world[y][x].id == "grass1" ||
+					Earth.world[y][x].id == "grass2" ||
+					Earth.world[y][x].id == "rock") && Earth.world[y - 1][x].id == "air") {
+					Earth.world[y - 1][x] = Tileset.BOULDER;
 				}
 				if (Earth.world[y][x - 1] != undefined) {
 					if (Earth.world[y][x].id == "grass" && Earth.world[y][x - 1].id == "air") {
-						Earth.world[y][x] = Tileset.G1;
+						Earth.world[y][x] = Tileset.GRASS1;
 					}
 				}
 				if (Earth.world[y + 1] != undefined) {
-					//if(Earth.world[y][x+2] == Tileset.G && Earth.world[y][(x+2)+1] == Tileset.G) {
 					let tRand = random(3);
 					if (Earth.world[y][x].id == "grass" && Earth.world[y][x + 1].id == "grass" && Earth.world[y - 1][x].id == "air" && Earth.world[y - 1][x + 1].id == "air") {
 						let canPlace = true;
@@ -241,11 +332,22 @@ export class Earth extends Planet {
 						}
 					}
 				}
+
+				if(y >= 950) {
+					Earth.world[y][x] = Tileset.LAVA;
+				}
 			}
 		}
 		
 		super.generateShadow(Earth.world, Earth.shadowMap);
 		
+	}
+
+	clumpOres(type, Y, X) {
+		if((Earth.world[Y][X+1] == Tileset.ROCK || Earth.world[Y][X+1] == Tileset.AIR || Earth.world[Y][X+1] == null) && random(2) == 1) {
+			Earth.world[Y][X+1] = type;
+			this.clumpOres(type, Y, X+1);
+		}
 	}
 	
 	//Adds droppable item to list of droppable items
@@ -269,80 +371,84 @@ export class Earth extends Planet {
 	}
 
 	static updateShadowMap(X, Y, t, test) {
-		let colour = "black";
-		for (let y = Y; y < Y + 10; y++) {
-			for (let x = X; x < X + 10; x++) {
-				let x5 = x - 5,
-					x4 = x - 4,
-					x3 = x - 3,
-					x2 = x - 2,
-					x1 = x - 1,
-					x5_5 = x + 5,
-					x4_4 = x + 4,
-					x3_3 = x + 3,
-					x2_2 = x + 2,
-					x1_1 = x + 1;
-				try {
-					if (x == 0) {
-						x1 = 999;
-						x2 = 998;
-						x3 = 997;
-						x4 = 996;
-						x5 = 995;
-					} else if (x == 1) {
-						x2 = 999;
-						x3 = 998;
-						x4 = 997;
-						x5 = 996;
-					} else if (x == 2) {
-						x3 = 999;
-						x4 = 998;
-						x5 = 997;
-					} else if (x == 3) {
-						x4 = 999;
-						x5 = 998;
-					} else if (x == 4) {
-						x5 = 999;
-					} else if (x == 999) {
-						x1_1 = 0;
-						x2_2 = 1;
-						x3_3 = 2;
-						x4_4 = 3;
-						x5_5 = 4;
-					} else if (x >= 998) {
-						x2_2 = 0;
-						x3_3 = 1;
-						x4_4 = 2;
-						x5_5 = 3;
-					} else if (x >= 997) {
-						x3_3 = 0;
-						x4_4 = 1;
-						x5_5 = 2;
-					} else if (x >= 996) {
-						x4_4 = 0;
-						x5_5 = 1;
-					} else if (x >= 995) {
-						x5_5 = 0;
-					}
-					if (Earth.shadowMap[y][x][1] != "yellow" && Earth.world[y][x].id != "water") {
-						if ((Earth.world[y][x1_1].id == "air" || Earth.world[y][x1].id == "air" || Earth.world[y + 1][x].id == "air" || Earth.world[y - 1][x].id == "air") && Earth.world[y][x].id != "air") {
-							Earth.shadowMap[y][x] = null;
-						} else if ((Earth.world[y][x2_2].id == "air" || Earth.world[y][x2].id == "air" || Earth.world[y + 2][x].id == "air" || Earth.world[y - 2][x].id == "air") && Earth.world[y][x].id != "air") {
-							Earth.shadowMap[y][x] = [0.2, colour];
-						} else if ((Earth.world[y][x3_3].id == "air" || Earth.world[y][x3].id == "air" || Earth.world[y + 3][x].id == "air" || Earth.world[y - 3][x].id == "air") && Earth.world[y][x].id != "air") {
-							Earth.shadowMap[y][x] = [0.4, colour];
-						} else if ((Earth.world[y][x4_4].id == "air" || Earth.world[y][x4].id == "air" || Earth.world[y + 4][x].id == "air" || Earth.world[y - 4][x].id == "air") && Earth.world[y][x].id != "air") {
-							Earth.shadowMap[y][x] = [0.6, colour];
-						} else if ((Earth.world[y][x5_5].id == "air" || Earth.world[y][x5].id == "air" || Earth.world[y + 5][x].id == "air" || Earth.world[y - 5][x].id == "air") && Earth.world[y][x].id != "air") {
-							Earth.shadowMap[y][x] = [0.8, colour];
-						} else if (Earth.world[y][x].id != "air") {
-							Earth.shadowMap[y][x] = [0.9, colour];
+		try {
+			let colour = "black";
+			for (let y = Y; y < Y + 10; y++) {
+				for (let x = X; x < X + 10; x++) {
+					let x5 = x - 5,
+						x4 = x - 4,
+						x3 = x - 3,
+						x2 = x - 2,
+						x1 = x - 1,
+						x5_5 = x + 5,
+						x4_4 = x + 4,
+						x3_3 = x + 3,
+						x2_2 = x + 2,
+						x1_1 = x + 1;
+					try {
+						if (x == 0) {
+							x1 = 999;
+							x2 = 998;
+							x3 = 997;
+							x4 = 996;
+							x5 = 995;
+						} else if (x == 1) {
+							x2 = 999;
+							x3 = 998;
+							x4 = 997;
+							x5 = 996;
+						} else if (x == 2) {
+							x3 = 999;
+							x4 = 998;
+							x5 = 997;
+						} else if (x == 3) {
+							x4 = 999;
+							x5 = 998;
+						} else if (x == 4) {
+							x5 = 999;
+						} else if (x == 999) {
+							x1_1 = 0;
+							x2_2 = 1;
+							x3_3 = 2;
+							x4_4 = 3;
+							x5_5 = 4;
+						} else if (x >= 998) {
+							x2_2 = 0;
+							x3_3 = 1;
+							x4_4 = 2;
+							x5_5 = 3;
+						} else if (x >= 997) {
+							x3_3 = 0;
+							x4_4 = 1;
+							x5_5 = 2;
+						} else if (x >= 996) {
+							x4_4 = 0;
+							x5_5 = 1;
+						} else if (x >= 995) {
+							x5_5 = 0;
 						}
+						if (Earth.shadowMap[y][x][1] != "yellow" && Earth.world[y][x].id != "water" && Earth.world[y][x].id != "window" && Earth.world[y][x].id != "lava") {
+							if ((Earth.world[y][x1_1].id == "air" || Earth.world[y][x1].id == "air" || Earth.world[y + 1][x].id == "air" || Earth.world[y - 1][x].id == "air") && Earth.world[y][x].id != "air") {
+								Earth.shadowMap[y][x] = null;
+							} else if ((Earth.world[y][x2_2].id == "air" || Earth.world[y][x2].id == "air" || Earth.world[y + 2][x].id == "air" || Earth.world[y - 2][x].id == "air") && Earth.world[y][x].id != "air") {
+								Earth.shadowMap[y][x] = [0.2, colour];
+							} else if ((Earth.world[y][x3_3].id == "air" || Earth.world[y][x3].id == "air" || Earth.world[y + 3][x].id == "air" || Earth.world[y - 3][x].id == "air") && Earth.world[y][x].id != "air") {
+								Earth.shadowMap[y][x] = [0.4, colour];
+							} else if ((Earth.world[y][x4_4].id == "air" || Earth.world[y][x4].id == "air" || Earth.world[y + 4][x].id == "air" || Earth.world[y - 4][x].id == "air") && Earth.world[y][x].id != "air") {
+								Earth.shadowMap[y][x] = [0.6, colour];
+							} else if ((Earth.world[y][x5_5].id == "air" || Earth.world[y][x5].id == "air" || Earth.world[y + 5][x].id == "air" || Earth.world[y - 5][x].id == "air") && Earth.world[y][x].id != "air") {
+								Earth.shadowMap[y][x] = [0.8, colour];
+							} else if (Earth.world[y][x].id != "air") {
+								Earth.shadowMap[y][x] = [0.9, colour];
+							}
+						}
+					} catch (e) {
+						//LOL F U
 					}
-				} catch (e) {
-					//LOL F U
 				}
 			}
+		} catch(e) {
+			console.log(e);
 		}
 	}
 

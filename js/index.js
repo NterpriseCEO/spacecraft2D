@@ -10,6 +10,8 @@ import { Character } from "./character/Character.js";
 import { AtmosphereLighting } from "./atmosphere_lighting/AtmosphereLighting.js";
 import { BlockPlacement } from "./object_placement/BlockPlacement.js";
 
+let instructionsOpen = false;
+
 //Checks if page is fully loaded
 document.onreadystatechange = function () {
 	if (document.readyState == "complete") {
@@ -34,21 +36,26 @@ function init() {
 		atmosphereLighting.resize();
 	});
 
-	function addItems() {
-		window.dispatchEvent(new CustomEvent("addNewItems", {
-			detail: [
-				[Tileset.FRNC, 2, null],
-				[Tileset.LOG, 64, null],
-				[Tileset.IR, 64, null],
-				[Tileset.STRING, 6, null],
-				[Tileset.STK, 10, null],
-				[Tileset.STN_PKX, 1, 100],
-				[Tileset.C_BENCH, 1, null]
-			]
-		}));
-		window.removeEventListener("click", addItems);
+	function addItems(e) {
+		if(e.target.id == "canvas") {
+			window.dispatchEvent(new CustomEvent("addNewItems", {
+				detail: [
+					[Tileset.LADDER, 1000, null],
+				]
+			}));
+			window.removeEventListener("click", addItems);
+		}
 	}
 	window.addEventListener("click", addItems);
+
+	document.getElementById("instructionsButton").addEventListener("click", function () {
+		instructionsOpen = true;
+		document.getElementById("instructions").classList.remove("hide");
+	});
+	document.getElementById("closeInstructions").addEventListener("click", function () {
+		instructionsOpen = false;
+		document.getElementById("instructions").classList.add("hide");
+	});
 
 	//Disables anti-aliasing for pixel effect
 	Canvas.ctx.imageSmoothingEnabled = false;
@@ -61,10 +68,17 @@ function init() {
 	document.body.classList.add("skyColour");
 	window.requestAnimationFrame(render);
 
-
 	function render(timestamp) {
+		if(instructionsOpen) {
+			window.requestAnimationFrame(render);
+			return;
+		}
+
 		//console.time("speed");
 		//Only if moving or clicking
+		character.checkIfInWater();
+		character.checkIfInLava();
+
 		if (character.getHealth() <= 0) {
 			character.reset(100);
 		}
@@ -75,7 +89,11 @@ function init() {
 		Canvas.ctx.clearRect(0, 0, Canvas.canvas.width, Canvas.canvas.height);
 		//Renders the character
 		character.renderCharacter();
-		world.renderWorld(Camera.camX - Camera.startX, Camera.camY - Camera.startY, timestamp);
+		try {
+			world.renderWorld(Camera.camX - Camera.startX, Camera.camY - Camera.startY, timestamp);
+		}catch(e) {
+			console.log(e);
+		}
 		//Show mining animation
 		
 		if (BlockPlacement.mining) {
@@ -103,6 +121,10 @@ function init() {
 			}
 		}
 	}*/
+}
+
+export {
+	instructionsOpen
 }
 
 /*function random(limit) {

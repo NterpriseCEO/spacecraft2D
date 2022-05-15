@@ -31,6 +31,7 @@
 		<div id = "biomes">Forest<br></div>
 		<div id = "inventorySmall"></div>
 		<div id = "healthBar"><div id = "healthIndicator"></div></div>
+		<div id = "oxygenBar" class = "hide"><div id = "oxygenIndicator"></div></div>
 
 		<div id = "inventory" class = "hide">
 			<div id = "crafting">
@@ -44,5 +45,567 @@
 		<div id = "cursor"></div>
 		<img id = "sunMoon" src = "res/sunMoon.png" alt = "">
 		<img id = "light" src = "res/lighting.png" alt="">
+		
+		<button id = "instructionsButton" title = "Instructions">?</button>
+		<div id="instructions" class = "hide">
+			<div id="instructionsHeader">
+				<h1>Instructions</h1>
+				<button id = "closeInstructions">X</button>
+			</div>
+			<div id="instructionsPanel">
+				<h2>Movement</h2>
+				<p>
+					A and D to move left and right<br>
+					W to climb ladders and swim upwards in water
+				</p><br>
+				<h2>Health</h2>
+				<p>
+					You, the player can inflict damage on yourself by falling from high places, dying in lava or from trying to mine
+					ores and rocks using your bare hands. <br>
+					You can also drown in the water. Once you run out of oxygen (the blue bar that appears when you go under water),
+					you will begin to loose health.
+				</p>
+				<p>
+					Tools also have health and when you mine ores or trees/cacti, the tools become damaged until they eventually disappear
+					from your inventory.
+				</p><br>
+
+				<h2>Mining</h2>
+				<p>
+					Left click to place blocks<br>
+					Right click to mine blocks
+				</p><br>
+
+				<h2>Inventory</h2>
+				<p>
+					Press E to open inventory<br>
+					Press ESC or E to exit inventory<br>
+					Move items around using the LMB<br>
+					You can swap items by dragging and dropping items on top of each other<br>
+					You can drag a a subset of items by pressing shift when moving blocks<br>
+				</p><br>
+
+				<h2>Crafting</h2>
+				<p>
+					Open your inventory or click on a crafting bench to craft items<br>
+				</p><br>
+
+				<h3>Crafting recipes</h3><br>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/strippedLogsWoodenBlocks.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Stripped logs and wooden blocks</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 log</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/strippedLog.png" class = "crpItemImage" title = "Stripped log"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 4</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/woodenBlock.png" class = "crpItemImage" title = "Wooden block"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 4</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/woodenBlocksSticks.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Wooden blocks and sticks</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 stripped log</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/woodenBlock.png" class = "crpItemImage" title = "Wooden block"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 4</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/sticks.png" class = "crpItemImage" title = "Sticks"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 1</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/stringSticks.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>String and sticks</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 leaf</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/string.png" class = "crpItemImage" title = "String"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/sticks.png" class = "crpItemImage" title = "Sticks"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 1</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/stoneShovelNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Stone shovels</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 boulder and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/stoneShovel.png" class = "crpItemImage" title = "Stone shovel"><br>
+								<span>Item health: 100</span><br>
+								<span>Mining speed increase: 3</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/ironShovelNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Iron shovels</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 iron ingot and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/ironShovel.png" class = "crpItemImage" title = "Iron shovel"><br>
+								<span>Item health: 300</span><br>
+								<span>Mining speed increase: 5</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/goldShovelNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Gold shovels</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 gold ingot and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/goldShovel.png" class = "crpItemImage" title = "Gold shovel"><br>
+								<span>Item health: 200</span><br>
+								<span>Mining speed increase: 2</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/diamondShovelNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Diamond shovels</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 diamond and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/diamondShovel.png" class = "crpItemImage" title = "Diamond shovel"><br>
+								<span>Item health: 900</span><br>
+								<span>Mining speed increase: 9</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/stonePickaxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Stone Pickaxes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 boulder, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/stonePickaxe.png" class = "crpItemImage" title = "Stone pickaxe"><br>
+								<span>Item health: 100</span><br>
+								<span>Mining speed increase: 3</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/ironPickaxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Iron pickaxes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 iron ingot, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/ironPickaxe.png" class = "crpItemImage" title = "Iron pickaxe"><br>
+								<span>Item health: 300</span><br>
+								<span>Mining speed increase: 4</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/goldPickaxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Gold pickaxes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 gold ingot, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/goldPickaxe.png" class = "crpItemImage" title = "Gold pickaxe"><br>
+								<span>Item health: 200</span><br>
+								<span>Mining speed increase: 2</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/diamondPickaxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Diamond pickaxes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 diamond, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/diamondPickaxe.png" class = "crpItemImage" title = "Diamond pickaxe"><br>
+								<span>Item health: 900</span><br>
+								<span>Mining speed increase: 6</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/stoneAxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Stone Axes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>2 boulders, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/stoneAxe.png" class = "crpItemImage" title = "Stone axe"><br>
+								<span>Item health: 100</span><br>
+								<span>Mining speed increase: 3</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/ironAxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Iron axes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>2 iron ingots, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/ironAxe.png" class = "crpItemImage" title = "Iron axe"><br>
+								<span>Item health: 300</span><br>
+								<span>Mining speed increase: 5</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/goldAxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Gold axes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>2 gold ingots, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/goldAxe.png" class = "crpItemImage" title = "Gold axe"><br>
+								<span>Item health: 200</span><br>
+								<span>Mining speed increase: 2</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/diamondAxeNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Diamond axes</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>2 diamonds, 1 piece of string and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/diamondAxe.png" class = "crpItemImage" title = "Diamond axe"><br>
+								<span>Item health: 900</span><br>
+								<span>Mining speed increase: 9</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "false">false</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/torchNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Torches</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>1 piece of coal and 1 stick</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/torch.png" class = "crpItemImage"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 2</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/craftingBenchNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Crafting benches</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>2 wooden blocks and 2 sticks</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/craftingBench.png" class = "crpItemImage" title = "Crafting bench"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/windowNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Windows</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>4 sticks and a piece of glass</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/window.png" class = "crpItemImage" title = "Window"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/furnaceNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Furnaces</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>8 blocks of rock</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/furnace.png" class = "crpItemImage" title = "Furnace"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/ladderNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Ladders</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>7 ladders</p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/ladder.png" class = "crpItemImage"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: 1</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="craftingRecipePanel">
+					<div class="crpLeftPanel">
+						<img src = "res/craftingRecipes/doorNone.png" class = "recipeImage">
+					</div>
+					<div class="crpRightPanel">
+						<div class="crpHeader">
+							<h3>Doors</h3>
+						</div>
+						<div class="crpIngredients">
+							<h4>Ingredients</h4>
+							<p>5 wooden blocks, 3 sticks and 1 piece of glass </p>
+						</div>
+						<div class="crpItems">
+							<div class="crpItem">
+								<img src = "res/craftingRecipes/door.png" class = "crpItemImage" title = "Door"><br>
+								<span>Item health: N/A</span><br>
+								<span>Mining speed increase: N/A</span><br>
+								<span>Furnace fuel life: N/A</span><br>
+								<span>Can be placed: <span class = "true">true</span></span><br>
+							</div>
+						</div>
+					</div>
+				</div><br>
+				<h2>Furnace smelting</h2>
+				<p>
+					Items placed in the bottom of the furnace will be burnt the items in the top will be smelted.<br>
+				</p><br>
+				<h3>Burnable items</h3>
+				<p>Leaves, logs, stripped logs, wooden blocks, coal, sticks, ladders and torches.</p><br>
+				<h3>Smeltable items</h3>
+				<p>Sand, iron and gold</p>
+				<p>Smelting sand produces glass. Smelting iron produces iron ingots. Smelting gold produces gold ingots</p>
+				<img src = "res/craftingRecipes/furnaceSmelting.png" class = "w-full">
+			</div>
+		</div>
 	</body>
 </html>

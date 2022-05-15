@@ -25,10 +25,15 @@ export class Character {
 	isMoving = true;
 	#blockFall = 0;
 	#isFalling = false;
+	#canClimb = false;
 	// #lastPosX = 0;
 	// #lastPosY = 0;
-	#healthBar = null;
+	#healthIndicator = null;
+	#oxygenBarWrapper = null;
+	#oxygenIndicator = null;
 	#coords = null;
+
+	oxygenCounter = 100;
 
 	constructor() {
 
@@ -53,8 +58,10 @@ export class Character {
 		// this.#lastPosX = Camera.camX / Planet.size;
 		// this.#lastPosY = Camera.camY / Planet.size;
 
-		//References the healthBar element
-		this.#healthBar = document.getElementById("healthIndicator");
+		//References the healthBar and oxygen indicator elements
+		this.#healthIndicator = document.getElementById("healthIndicator");
+		this.#oxygenBarWrapper = document.getElementById("oxygenBar");
+		this.#oxygenIndicator = document.getElementById("oxygenIndicator");
 	}
 
 	changeDirection(x) {
@@ -71,14 +78,16 @@ export class Character {
 			Camera.moveCamera(this.#speed[1], 0);
 			this.isMoving = true;
 		}
-		// Camera move up
+		// Determines if the player can climb water or ladders
 		if (Key.isDown("w") || Key.isDown("W")) {
-			this.#canFall = false;
-			Camera.moveCamera(0, -this.#speed[0]);
-			this.#spd = 7;
+			if(this.#canClimb) {
+				Camera.moveCamera(0, -4);
+				this.#canJump = false;
+			}else {
+			}
 		} else {
 			if (!this.#isFalling) {
-				this.#spd = 2;
+				this.#canJump = true;
 			}
 		}
 		//Move camera left
@@ -139,7 +148,7 @@ export class Character {
 			}
 		}
 		//Draw the character and correct frames
-		Canvas.ctx.drawImage(Tileset.image, this.characterAnimation.getFrame(), Math.round(Tileset.character.y), 20, 40, this.#posX, this.#posY, Math.round(Planet.size), Math.round(Planet.size * 2));
+		Canvas.ctx.drawImage(Tileset.image, this.characterAnimation.getFrame(), Math.round(Tileset.character.y), 20, 40, this.#posX, this.#posY, Math.floor(Planet.size), Math.floor(Planet.size * 2));
 		//Show the characters coordinates position
 		this.#coords.innerHTML = "X: " + Math.floor(Camera.camX / Planet.size) + "<br>Y: " + Math.floor(Camera.camY / Planet.size);
 	}
@@ -156,26 +165,42 @@ export class Character {
 		//Set character speed
 		this.#speed = [this.#spd, this.#spd];
 
-		// this.#fallTimer++;
+		if(Camera.camY == Earth.size*999) {
+			this.#canFall = false;
+		}
 
 		//Checks if world y exists
 		if (Earth.world[y] != undefined) {
 			if (Earth.world[y][x] != undefined) {
+				//Checks if the player is colliding with a water or ladder blocks
+				if(Earth.world[y-1][x]?.id == "water" || Earth.world[y][x]?.id == "water" ||
+					Earth.world[y-1][x]?.id == "ladder" || Earth.world[y][x]?.id == "ladder" ||
+					Earth.world[y-1][x-1]?.id == "ladder" || Earth.world[y][x-1]?.id == "ladder" ||
+					Earth.world[y-1][x+1]?.id == "ladder" || Earth.world[y][x+1]?.id == "ladder") {
+					//Determines that the player can climb the ladder or water
+					this.#canClimb = true;
+					this.#fallSpeed = 1;
+				}else {
+					this.#canClimb = false;
+					this.oxygenCounter = 100;
+					this.#fallSpeed = 2;
+				}
+
 				let x1 = x + 1 >= 1000 ? 0 : x + 1,
 					pos = Earth.world[y][x],
 					c = Earth.world[y][x1];
+
 				//Checks if world xy pos is air or camera pos is at block boundary
-				if (Camera.camY == y * Planet.size && (!pos.canWalkThrough || !c.canWalkThrough)) {
+				if (Camera.camY >= y * Planet.size && (!pos.canWalkThrough || !c.canWalkThrough)) {
 					//Checks if camera x is colliding with block at feet
 					if ((Camera.camX + Planet.size != x1 * Planet.size && x1 != 0) || !pos.canWalkThrough || (x1 == 0 && Camera.camX > Planet.size * 999 && Camera.camX <= Planet.size * 1000)) {
 						this.#canFall = false;
 						//If player has fallen a certain distance, calculate damage to player
-						if (this.#blockFall != 0 && Camera.camY - this.#blockFall > Planet.size * 4) {
-							console.log((Camera.camY - this.#blockFall) / 10, Camera.camY, this.#blockFall);
-							
-							this.#health -= (Camera.camY - this.#blockFall) / 5;
-							this.#blockFall = 0;
-							this.#healthBar.style.width = (this.#health * 2) + "px";
+						if (this.#blockFall != 0 && Camera.camY - this.#blockFall > Planet.size * 4) {							
+							if(!this.#canClimb) {
+								this.damage((Camera.camY - this.#blockFall) / 5)
+								this.#blockFall = 0;
+							}
 						}
 						this.#isFalling = false;
 						// this.#fallTimer = 0;
@@ -244,15 +269,28 @@ export class Character {
 	}
 	damage(value) {
 		this.#health -= value;
-		console.log(this.#health);
-		this.#healthBar.style.width = (this.#health * 2) + "px";
+		this.#healthIndicator.style.width = (this.#health * 2) + "px";
+		this.setIndicatorColor();
 	}
 	setHealth(value) {
 		this.#health = value;
-		this.#healthBar.style.width = (this.#health * 2) + "px";
+		this.#healthIndicator.style.width = (this.#health * 2) + "px";
+		this.setIndicatorColor();
 	}
 	getHealth() {
 		return this.#health;
+	}
+	setIndicatorColor() {
+		//Sets the color of the health indicator based on health levels
+		if(this.#health >= 75) {
+			this.#healthIndicator.style.backgroundColor = 'green';
+		}else if(this.#health >= 50) {
+			this.#healthIndicator.style.backgroundColor = 'darkgreen';
+		}else if(this.#health >= 25) {
+			this.#healthIndicator.style.backgroundColor = 'orange';
+		}else if(this.#health >= 0) {
+			this.#healthIndicator.style.backgroundColor = 'brown';
+		}
 	}
 	reset() {
 		//Reset health
@@ -265,8 +303,9 @@ export class Character {
 				break;
 			}
 		}
-		this.#health = 100;
-		this.#healthBar.style.width = "100%";
+		this.setHealth(100);
+		//Resets the width of the health indicator
+		this.#healthIndicator.style.width = "100%";
 		Camera.setCameraPos(0, Planet.size * cameraPos);
 	}
 
@@ -293,5 +332,31 @@ export class Character {
 		let xx = Math.floor(X / 10) * 10,
 			yy = Math.floor(Y / 10) * 10;
 		window.dispatchEvent(new CustomEvent("updateDroppables", { detail: [xx, yy] }));
+	}
+
+	//Shows the oxygen bar if the player is under water
+	checkIfInWater() {
+		let x = Math.floor(Camera.camX / Planet.size),
+			y = Math.floor(Camera.camY / Planet.size);
+		if(Earth.world[y-2][x] == Tileset.WATER) {
+			this.oxygenCounter-=0.1;
+			this.#oxygenIndicator.style.width = (this.oxygenCounter * 2) + "px";
+			this.#oxygenBarWrapper.classList.remove('hide');
+		}else {
+			this.oxygenCounter = 100;
+			this.#oxygenBarWrapper.classList.add('hide');
+		}
+
+		if(this.oxygenCounter <= 0) {
+			this.damage(0.1);
+		}
+	}
+
+	checkIfInLava() {
+		let x = Math.floor(Camera.camX / Planet.size),
+			y = Math.floor(Camera.camY / Planet.size);
+		if(Earth.world[y-1][x] == Tileset.LAVA || Earth.world[y-2][x] == Tileset.LAVA) {
+			this.damage(0.1);
+		}
 	}
 }

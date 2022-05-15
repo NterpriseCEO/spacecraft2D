@@ -12,6 +12,8 @@ export class Furnace {
 	#metre;
 	#furnacePos;
 
+	#xPos = 0;
+	#yPos = 0;
 	
 	#furnaceItems = [null, null, null];
 	
@@ -23,7 +25,10 @@ export class Furnace {
 	#smeltingTimer = 0;
 	#smeltingTime = 0;
 
-	constructor() {
+	constructor(x, y) {
+
+		this.#xPos = x;
+		this.#yPos = y;
 
 		//References all the furnace boxes
 		this.#furnaceBoxes = document.getElementsByClassName("furnaceItem");
@@ -39,9 +44,8 @@ export class Furnace {
 		//Furnace variables
 		this.#fuelLife = -1;
 		this.#metre = document.querySelector("#furnace meter");
-		this.#furnacePos = [0, 0];
 
-		//THe id of the furnace
+		//The id of the furnace
 		this.#furnaceID = Furnace.furnaces.length;
 
 		let _this = this;
@@ -55,8 +59,6 @@ export class Furnace {
 
 				//Renders the furnace items in the current furnace
 				_this.#renderFurnaceItems();
-
-				_this.#furnacePos = e.detail;
 			}
 		});
 	}
@@ -94,6 +96,10 @@ export class Furnace {
 		Furnace.furnaces.push(furnace);
 	}
 
+	getFurnaceItems() {
+		return this.#furnaceItems.map(item => item.type).filter(item => item !== null && item !== Tileset.AIR);
+	}
+
 	//Renders all of the furnace items
 	#renderFurnaceItems() {
 		for(let i = 0; i < this.#furnaceItems.length; i++) {
@@ -116,10 +122,10 @@ export class Furnace {
 
 		//Checks if the furnace fuel is one of the items below
 		switch(this.#furnaceItems[1].type)	{
-			case Tileset.LEA: case Tileset.STRPD_LOG:
-			case Tileset.LOG: case Tileset.WD_BLK:
-			case Tileset.COAL: case Tileset.STK:
-			case Tileset.TRCH:
+			case Tileset.LEAVES: case Tileset.STRIPPED_LOG:
+			case Tileset.LOG: case Tileset.WOOD_BLOCK:
+			case Tileset.COAL: case Tileset.STICK:
+			case Tileset.TORCH:
 				break;
 			default:
 				return;
@@ -137,6 +143,8 @@ export class Furnace {
 		}
 
 		let _this = this;
+		
+		window.dispatchEvent(new CustomEvent("toggleFurnaceHeat", { detail: { open: true, x: this.#xPos, y: this.#yPos } }));
 
 		//Smelts an item over 1 second intervals
 		this.#smeltingTimer = setInterval(() => {
@@ -163,6 +171,9 @@ export class Furnace {
 				if(Furnace.currentFurnace == _this.#furnaceID) {
 					_this.#renderFurnaceItems();
 				}
+				setTimeout(() => {
+					window.dispatchEvent(new CustomEvent("toggleFurnaceHeat", { detail: { open: false, x: this.#xPos, y: this.#yPos } }));
+				}, 3000)
 				//Cancels the interval
 				clearInterval(_this.#smeltingTimer);
 				return;
@@ -177,7 +188,7 @@ export class Furnace {
 			//Increment the fuel amount
 			if(_this.#smeltingTime == 100) {
 				_this.setFuelLife(--_this.#fuelLife);
-				_this.setFurnaceItem(2, _this.getFurnaceItem(2).amount + 1, furnaceOutput, null);
+				_this.setFurnaceItem(2, _this.getFurnaceItem(2).amount + (furnaceOutput.furnaceOutputAmount || 1), furnaceOutput, null);
 				_this.decrementFurnaceItem(0);
 
 				//Removes the fuel item if it is depleted
@@ -198,16 +209,6 @@ export class Furnace {
 				_this.#metre.value = _this.#smeltingTime;
 			}
 		},1000);
-	}
-
-	//Cancels the smelting when you remove a furnace item
-	cancelSmelting() {
-		if (InventoryItems.items[44 + this.#furnaceNo].amount === 0) {
-			this.#fuelLife = -1;
-		}
-		this.metre.value = 0;
-		window.dispatchEvent(new CustomEvent("toggleFurnaceHeat", { detail: { open: false, x: this.#furnacePos[0], y: this.#furnacePos[1] } }));
-		clearInterval(this.#smeltingTimer);
 	}
 
 	static addFurnaceBox(i, selector, type) {

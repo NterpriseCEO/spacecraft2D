@@ -231,8 +231,12 @@ export class AtmosphereLighting {
 		//this.#ctx.rotate((Math.PI / 180) * 90);
 		//Only draws the sky colour if it is not night time
 		if (this.#opacity < 0.9) {
-			Canvas.ctx.fillStyle = "rgba(137, 207, 240," + (0.9 - this.#opacity) + ")";
-			//this.#ctx.fillStyle = "rgba(137, 207, 240,0.9)";
+			const skyGradient = Canvas.ctx.createLinearGradient(0, 0-Camera.camY/10, 0, Canvas.canvas.width);
+			skyGradient.addColorStop(0, `rgba(25,25,112, ${0.9 - this.#opacity})`);
+			skyGradient.addColorStop(0.5, `rgba(137, 207, 240, ${0.9 - this.#opacity})`);
+
+			Canvas.ctx.fillStyle = skyGradient;
+
 			Canvas.ctx.fillRect(0, 0, Canvas.canvas.width, Canvas.canvas.height);
 		}
 		Canvas.ctx.globalCompositeOperation = "source-over";

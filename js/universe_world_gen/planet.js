@@ -59,7 +59,7 @@ export class Planet {
 						x5_5 = 0;
 					}
 				}
-				if (world[y][x].id != "water") {
+				if (world[y][x].id != "water" && world[y][x].id != "window" && world[y][x].id != "lava") {
 					try {
 						if ((world[y][x1_1].id == "air" || world[y][x1].id == "air" || world[y + 1][x].id == "air" || world[y - 1][x].id == "air") && world[y][x].id != "air") {
 							shadowMap[y][x] = null;

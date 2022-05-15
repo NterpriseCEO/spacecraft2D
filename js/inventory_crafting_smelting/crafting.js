@@ -113,6 +113,11 @@ export class Crafting {
 		return this.#craftingInputsOutputs[i];
 	}
 
+	getCraftingItems() {
+		this.#craftingInputsOutputs.splice(9);
+		return this.#craftingInputsOutputs.map(item => item.type).filter(item => item != Tileset.AIR);
+	}
+
 	//Decrements the value of a specific crafting item
 	decrementCraftingItem(i) {
 		let craftingItem = this.getCraftingItem(i);
@@ -131,6 +136,8 @@ export class Crafting {
 		//Sets the position of the inventory block image which corresponds to a spefic item in the tileset
 		invBlock.style.backgroundPosition = "-" + (cType.x * 4) + "px -" + (cType.y * 4) + "px";
 		invBlock.querySelector("span").innerHTML = craftingItem.amount > 0 ? craftingItem.amount : "";
+
+		// invBlock.querySelector(".itemHealth").max = cType.itemHealth;
 	}
 
 	checkRecipes() {
@@ -168,10 +175,10 @@ export class Crafting {
 		craftingRecipes[value].every((recipe) => {
 			if(count > 1) {
 				//Checks if each crafting item in the crafting table matches each item in the recipe
-				correct = this.#craftingInputsOutputs.slice(0, -2).every((input, i) => input.type == recipe.ingredients[i]);
+				correct = this.#craftingInputsOutputs.slice(0, -2).every((input, i) => JSON.stringify(input.type) == JSON.stringify(recipe.ingredients[i]));
 			}else {
 				//Checks if the amount of mataching crafting items in the crafting table = 1
-				correct = this.#craftingInputsOutputs.filter((input, i) => input.type == recipe.ingredients[0]).length == 1;
+				correct = this.#craftingInputsOutputs.filter((input, i) => JSON.stringify(input.type) == JSON.stringify(recipe.ingredients[0])).length == 1;
 			}
 
 			//Sets the correctRecipe and breaks the loop if the recipe is correct
@@ -184,7 +191,7 @@ export class Crafting {
 
 		//Sets the crafting table outputs
 		correctRecipe.output.forEach((recipe, i) => {
-			const itemHealth = recipe.type.miningIncrease ? 100 : null;
+			const itemHealth = recipe.type.miningIncrease ? recipe.type.itemHealth : null;
 
 			this.setCraftingItem(9+i, recipe.amount, recipe.type, itemHealth);
 			this.#renderCraftingItem(9+i);

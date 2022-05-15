@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
+* {
+	font-family: 'DotGothic16', sans-serif;
+}
+
 body {
 	padding:0;
 	margin:0;
@@ -28,7 +34,6 @@ canvas:not(#canvas):not(#character) {
 	position:absolute;
 	top:0;
 	left:0;
-	//border:1px solid white;
 	z-index:2
 }
 #chunk {
@@ -36,12 +41,15 @@ canvas:not(#canvas):not(#character) {
 	background-color: red;
 }
 #lightsCanvas {
-	//background-color:red;
+	display:none;
+}
+
+img:not(#instructions img) {
 	display:none;
 }
 
 img {
-	display:none;
+	image-rendering: pixelated;
 }
 
 #coords,#biomes {
@@ -63,7 +71,7 @@ img {
 	width: 640px;
 	height:calc(90% - 110px);
 	top:10%;
-	left: calc(50vw - 320px);
+	left: calc(50vw - 335px);
 	padding:0px 10px;
 	background: linear-gradient(rgba(40,40,40,1) 0%, rgba(30,30,30,1) 100%);
 	z-index:3;
@@ -103,6 +111,10 @@ img {
 	top:-120px;
 	left:250px;
 }
+
+#crafting.advancedCrafting {
+	margin-top:25px;
+}
 	
 .advancedCrafting .craftingOutput {
 	top:-160px;
@@ -134,7 +146,7 @@ meter:not(.itemHealth) {
 
 #inventorySmall {
 	bottom:15px;
-	left:calc(50% - 310px);
+	left:calc(50% - 320px);
 	z-index:2;
 }
 .itemBox {
@@ -165,7 +177,7 @@ meter:not(.itemHealth) {
 	margin-top:40px;
 	color:white;
 	text-shadow: 1px 1px 10px #000000;
-	font-family:monospace;
+	pointer-events:none;
 }
 .itemHealth {
 	width:100%;
@@ -199,16 +211,172 @@ meter:not(.itemHealth) {
 	pointer-events:none;
 }
 
-#healthBar {
+#healthBar, #oxygenBar {
 	position:absolute;
 	width:200px;
 	height:25px;
 	bottom: 110px;
-	left:calc((100vw / 2) - 320px);
-	background-color:red;
 	z-index:3;
+}
+
+#oxygenBar {
+	left:calc(50vw - 110px);
+	background-color:rgb(0,0, 100);
+}
+#oxygenIndicator {
+	height:25px;
+	background-color:rgb(0,0,255);
+}
+
+#healthBar {
+	left:calc(50vw - 320px);
+	background-color:red;
 }
 #healthIndicator {
 	height:25px;
 	background-color:green;
+}
+
+#instructionsButton {
+	all: unset;
+	font-size: 20px;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 60px;
+	height: 60px;
+	border-radius: 100%;
+	background-color: gainsboro;
+	text-align-last: center;
+	cursor: pointer;
+}
+
+#instructions {
+	position:absolute;
+	width:100vw;
+	height:100vh;
+	background-color: gainsboro;
+	z-index:3;
+}
+
+#instructionsHeader {
+	text-align: center;
+	height: 7vh;
+	border-bottom: 1px solid #000;
+}
+h1 {
+	padding: 0;
+	margin: 0;
+	width: 50vw;
+	margin-left: 25vw;
+}
+#closeInstructions {
+	all: unset;
+	position: absolute;
+	top:0;
+	right:0;
+	width: 7vh;
+	height: 7vh;
+	background-color: gainsboro;
+	text-align-last: center;
+	border-left: 1px solid black;
+	cursor: pointer;
+}
+
+#closeInstructions:hover {
+	background-color: #ccc;
+}
+
+#instructionsPanel {
+	box-sizing: border-box;
+	width: 100vw;
+	height: 93vh;
+	background-color: #fff;
+	overflow-y:auto;
+	padding: 10px;
+}
+
+.craftingRecipePanel {
+	display: flex;
+	flex-direction: row;
+	height: calc(55vh + 10px);
+	border: 1px solid black;
+	padding-right: 0;
+	background-color: rgb(210, 210, 210);
+	margin-bottom: 20px;
+}
+.crpLeftPanel, .crpRightPanel {
+	width: 50%;
+	height: 100%;
+	box-sizing: border-box;
+	padding-bottom: 10px;
+}
+
+.crpLeftPanel {
+	height: calc(55vh + 10px);
+	box-sizing: border-box;
+	padding: 10px;
+}
+
+.crpLeftPanel .recipeImage {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.crpRightPanel {
+	display: flex;
+	flex-direction: column;
+	border-left: 1px solid black;
+}
+
+.crpHeader {
+	text-align: center;
+	height: 4vh;
+	border-bottom: 1px solid black;
+	padding: 10px 0;
+	/* flex: none; */
+}
+
+h3 {
+	margin: 0;
+	padding: 0;
+}
+
+.crpIngredients {
+	padding-left: 10px;
+	/* flex: none; */
+}
+
+.crpItems {
+	display: flex;
+	flex-direction: row;
+	flex: 1;
+	border-top: 1px solid black;
+	padding: 10px 10px 0 10px;
+}
+.crpItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex: 1;
+	width: 50%;
+}
+
+.crpItemImage {
+	width: 80px;
+}
+
+.true, .false {
+	font-weight: bold;
+}
+.true {
+	color: green;
+}
+.false {
+	color: red;
+}
+
+.w-full {
+	width: 100%;
 }

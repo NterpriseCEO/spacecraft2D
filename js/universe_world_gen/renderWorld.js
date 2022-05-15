@@ -61,20 +61,27 @@ export class RenderWorld {
 			//Update droppable chunks
 			_this.#chunks.updateDroppables(e.detail[0], e.detail[1]);
 		});
+		window.addEventListener("updateChunk", function (e) {
+			//Update droppable chunks
+			_this.#chunks.updateChunk(e.detail[0], e.detail[1]);
+		});
 
 		window.addEventListener("toggleFurnaceHeat", function (e) {
 			let X = e.detail.x,
 				Y = e.detail.y,
 				x = Math.floor(X / 10) * 10,
 				y = Math.floor(Y / 10) * 10;
-			let type = e.detail.open ? Tileset.FRNC_HOT : Tileset.FRNC;
+			const type = e.detail.open ? Tileset.FURNACE_HOT : Tileset.FURNACE;
+			const furnaceID = Earth.world[Y][X].furnace;
 			Earth.world[Y][X] = type;
+			Earth.world[Y][X].furnace = furnaceID;
+
 			if (e.detail.open) {
 				window.dispatchEvent(new CustomEvent("lightAdded", { detail: [X, Y] }));
 			} else {
 				window.dispatchEvent(new CustomEvent("lightRemoved", { detail: [X, Y] }));
 			}
-			Chunks.updateChunk(x, y, true);
+			_this.#chunks.updateChunk(x, y, true);
 		});
 	}
 	random(limit) {

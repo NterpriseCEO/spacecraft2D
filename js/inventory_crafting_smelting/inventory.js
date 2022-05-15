@@ -3,6 +3,7 @@ import { Tileset } from "../universe_world_gen/TilesetTerrain.js";
 import { Crafting } from "./Crafting.js";
 import { Furnace } from "./Furnace.js";
 import { InventoryItems } from "./InventoryItems.js";
+import { instructionsOpen } from "../index.js";
 
 let _this;
 export class Inventory {
@@ -28,7 +29,6 @@ export class Inventory {
 		_this = this;
 
 		this.#clone.classList.add("inventoryItem");
-
 
 		this.items = [];
 		for (let i = 0; i < 8; i++) {
@@ -63,8 +63,8 @@ export class Inventory {
 		}
 
 		//References invBoxes/invBlocks as inventory items/boxes
-		this.invBoxes = document.querySelectorAll(".itemBox:not(.input)");
-		this.invBlocks = document.querySelectorAll(".itemBox:not(.input) .inventoryBlock");
+		this.invBoxes = document.querySelectorAll(".itemBox:not(.input):not(.furnaceItem)");
+		this.invBlocks = document.querySelectorAll(".itemBox:not(.input):not(.furnaceItem) .inventoryBlock");
 
 		//Sets first inventory bar item as selected
 		this.invBoxes[0].classList.add("selected");
@@ -130,12 +130,12 @@ export class Inventory {
 		}
 
 		InventoryItems.setInventoryItem(index, InventoryItems.items[index].amount, blockType, itemHealth, 0);
-		let type = InventoryItems.items[index].type;
+		let item = InventoryItems.getInventoryItem(index, 0);
 		//Increment amount of block
-		InventoryItems.items[index].amount++;
+		item.amount++;
 		//Change the backgroundPosition to the correct block pos
-		this.invBlocks[index].style.backgroundPosition = "-" + (type.x * 4) + "px -" + (type.y * 4) + "px";
-		this.invBlocks[index].getElementsByTagName("span")[0].innerText = InventoryItems.items[index].amount;
+		this.invBlocks[index].style.backgroundPosition = "-" + (item.type.x * 4) + "px -" + (item.type.y * 4) + "px";
+		this.invBlocks[index].getElementsByTagName("span")[0].innerText = item.amount;
 		return callback(true);
 	}
 
@@ -192,6 +192,9 @@ export class Inventory {
 		//Gets the child element of the source and target inventory item
 		let tChild = target.querySelector(".inventoryBlock"),
 			sChild = this.srcElement;
+		
+		let tItemHealthWrapper = tChild.querySelector(".itemHealthWrapper"),
+			sItemHealthWrapper = sChild.querySelector(".itemHealthWrapper");
 
 		let tAmount = 0,
 			sAmount = 0;
@@ -204,6 +207,11 @@ export class Inventory {
 		//Gets the target and source item
 		let tItem = InventoryItems.getInventoryItem(tIndex, type),
 			sItem = InventoryItems.getInventoryItem(sIndex, type2);
+
+		//Prevents draggin from crafting bench and furnace outputs to non empty inventory boxes
+		if((type2 === 3 || type2 === 4) && tItem.amount > 0) {
+			return;
+		}
 
 		//Returns if the source type is air or the source type is the same as the target type 
 		if(sItem == tItem || sItem.type == Tileset.AIR) {
@@ -270,10 +278,28 @@ export class Inventory {
 		tBGPos = "-" + (tType.x * 4) + "px -" + (tType.y * 4) + "px";
 		tChild.style.backgroundPosition = tBGPos;
 		tChild.querySelector("span").innerText = tAmount;
+		//Sets the max value of the item health bar
+		tChild.querySelector(".itemHealth").max = tType.itemHealth || 0;
+
+		//Shows the item health bar if the item has health or is damaged
+		if(sItem.itemHealth > 0 && sItem.itemHealth < tType.itemHealth) {
+			tItemHealthWrapper.classList.remove("hide");
+			tChild.querySelector(".itemHealth").value = sItem.itemHealth;
+		} else {
+			tItemHealthWrapper.classList.add("hide");
+		}
 
 		sBGPos = "-" + (sType.x * 4) + "px -" + (sType.y * 4) + "px";
 		sChild.style.backgroundPosition = sBGPos;
 		sChild.querySelector("span").innerText = sAmount > 0 ? sAmount : "";
+		sChild.querySelector(".itemHealth").max = sType.itemHealth || 0;
+
+		if(tItem.itemHealth > 0 && tItem.itemHealth < sType.itemHealth) {
+			sItemHealthWrapper.classList.remove("hide");
+			sChild.querySelector(".itemHealth").value = tItem.itemHealth;
+		} else {
+			sItemHealthWrapper.classList.add("hide");
+		}
 
 		//If the target item is a crafting bench item
 		//checks the crafting recipes
@@ -299,81 +325,93 @@ export class Inventory {
 
 	#events() {
 		window.addEventListener("wheel", function (e) {
-			//var pos = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
-			document.getElementsByClassName("selected")[0].classList.remove("selected");
-			if (e.deltaY == -100) {
-				//If scrolling up move to next selected inventory item
-				_this.#invPos++;
-				//If last inv item selected, select first item
-				if (_this.#invPos == 8) {
-					_this.#invPos = 0;
+			if(!instructionsOpen) {
+				//var pos = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
+				document.getElementsByClassName("selected")[0].classList.remove("selected");
+				if (e.deltaY == -100) {
+					//If scrolling up move to next selected inventory item
+					_this.#invPos++;
+					//If last inv item selected, select first item
+					if (_this.#invPos == 8) {
+						_this.#invPos = 0;
+					}
+				} else {
+					//Move to previous inv item
+					_this.#invPos--;
+					//If first item selected, select last item
+					if (_this.#invPos == -1) {
+						_this.#invPos = 7;
+					}
 				}
-			} else {
-				//Move to previous inv item
-				_this.#invPos--;
-				//If first item selected, select last item
-				if (_this.#invPos == -1) {
-					_this.#invPos = 7;
-				}
+				//Add selected class
+				_this.invBoxes[_this.#invPos].classList.add("selected");
+	
+				_this.toggleCharacterTorch();
 			}
-			//Add selected class
-			_this.invBoxes[_this.#invPos].classList.add("selected");
-
-			_this.toggleCharacterTorch();
 		}, false);
 
 		let advancedCrafting = document.getElementsByClassName("advancedCrafting");
 		document.addEventListener("keydown", function (e) {
 			switch (e.keyCode) {
 				case 39: case 38:
-					//Select next inv item
-					document.getElementsByClassName("selected")[0].classList.remove("selected");
-					_this.#invPos++;
-					if (_this.#invPos == 8) {
-						_this.#invPos = 0;
+					if(!instructionsOpen) {
+						//Select next inv item
+						document.getElementsByClassName("selected")[0].classList.remove("selected");
+						_this.#invPos++;
+						if (_this.#invPos == 8) {
+							_this.#invPos = 0;
+						}
+						_this.invBoxes[_this.#invPos].classList.add("selected");
+						_this.toggleCharacterTorch();
 					}
-					_this.invBoxes[_this.#invPos].classList.add("selected");
-					_this.toggleCharacterTorch();
 					break;
 				case 37: case 40:
-					//Select previous inv item
-					document.getElementsByClassName("selected")[0].classList.remove("selected");
-					_this.#invPos--;
-					if (_this.#invPos == -1) {
-						_this.#invPos = 7;
+					if(!instructionsOpen) {
+						//Select previous inv item
+						document.getElementsByClassName("selected")[0].classList.remove("selected");
+						_this.#invPos--;
+						if (_this.#invPos == -1) {
+							_this.#invPos = 7;
+						}
+						_this.invBoxes[_this.#invPos].classList.add("selected");
+						_this.toggleCharacterTorch();
 					}
-					_this.invBoxes[_this.#invPos].classList.add("selected");
-					_this.toggleCharacterTorch();
 					break;
 				case 69:
-					//Toggle inventory visibility
-					_this.#fullInventory.classList.toggle("hide");
-					for (let i = 0; i < advancedCrafting.length; i++) {
-						advancedCrafting[i].classList.add("hide");
+					if(!instructionsOpen) {
+						//Toggle inventory visibility
+						_this.#fullInventory.classList.toggle("hide");
+						for (let i = 0; i < advancedCrafting.length; i++) {
+							advancedCrafting[i].classList.add("hide");
+						}
+						Crafting.currentCraftingBench = 0;
+						//check crafting recipes for current crafting bench
+						Crafting.craftingBenches[Crafting.currentCraftingBench].loadCraftingBench();
+						document.getElementById("crafting").classList.add("smallCrafting");
+						document.getElementById("crafting").classList.remove("hide");
+						document.getElementById("furnace").classList.add("hide");
 					}
-					Crafting.currentCraftingBench = 0;
-					//check crafting recipes for current crafting bench
-					Crafting.craftingBenches[Crafting.currentCraftingBench].loadCraftingBench();
-					document.getElementById("crafting").classList.add("smallCrafting");
-					document.getElementById("crafting").classList.remove("hide");
-					document.getElementById("furnace").classList.add("hide");
 					break;
 				case 27:
-					//Hide inventory
-					_this.#fullInventory.classList.add("hide");
-					for (let i = 0; i < advancedCrafting.length; i++) {
-						advancedCrafting[i].classList.add("hide");
+					if(!instructionsOpen) {
+						//Hide inventory
+						_this.#fullInventory.classList.add("hide");
+						for (let i = 0; i < advancedCrafting.length; i++) {
+							advancedCrafting[i].classList.add("hide");
+						}
+						document.getElementById("crafting").classList.add("smallCrafting");
 					}
-					document.getElementById("crafting").classList.add("smallCrafting");
 					break;
 				case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56:
-					//Select invbar item based on number selected
-					document.getElementsByClassName("selected")[0].classList.remove("selected");
-					document.getElementById("crafting").classList.remove("hide");
-					//keyCode-49 = (0->7)
-					_this.#invPos = e.keyCode - 49;
-					_this.invBoxes[_this.#invPos].classList.add("selected");
-					_this.toggleCharacterTorch();
+					if(!instructionsOpen) {
+						//Select invbar item based on number selected
+						document.getElementsByClassName("selected")[0].classList.remove("selected");
+						document.getElementById("crafting").classList.remove("hide");
+						//keyCode-49 = (0->7)
+						_this.#invPos = e.keyCode - 49;
+						_this.invBoxes[_this.#invPos].classList.add("selected");
+						_this.toggleCharacterTorch();
+					}
 					break;
 				case 16:
 					_this.#shiftPressed = true;
