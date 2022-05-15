@@ -36,17 +36,17 @@ function init() {
 		atmosphereLighting.resize();
 	});
 
-	function addItems(e) {
-		if(e.target.id == "canvas") {
-			window.dispatchEvent(new CustomEvent("addNewItems", {
-				detail: [
-					[Tileset.LADDER, 1000, null],
-				]
-			}));
-			window.removeEventListener("click", addItems);
-		}
-	}
-	window.addEventListener("click", addItems);
+	// function addItems(e) {
+	// 	if(e.target.id == "canvas") {
+	// 		window.dispatchEvent(new CustomEvent("addNewItems", {
+	// 			detail: [
+	// 				[Tileset.LADDER, 1000, null],
+	// 			]
+	// 		}));
+	// 		window.removeEventListener("click", addItems);
+	// 	}
+	// }
+	// window.addEventListener("click", addItems);
 
 	document.getElementById("instructionsButton").addEventListener("click", function () {
 		instructionsOpen = true;
